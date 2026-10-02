@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Fase da lua de hoje, calendário mensal e fases principais do ano no horário local.">
+<meta name="theme-color" content="#0C1222">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%231D2540'/%3E%3Cpath d='M16 2a14 14 0 0 1 0 28a8 14 0 0 0 0-28z' fill='%23EEE8D4'/%3E%3C/svg%3E">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Calendário Lunar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: almanac page — current moon as the hero, month grid with a phase column beside it, a year table of principal phases below */
+:root{
+  --bg:#E8EBF2; --surface:#F6F7FB; --ink:#18203A; --muted:#58617D; --line:#CBD1DF;
+  --accent:#7A5A1A; --accent-soft:#EFE6D2;
+  --moon-lit:#FBF6E4; --moon-lit-edge:#E3DAC0; --moon-dark:#2B3350; --moon-rim:#8E98B3;
+  --f-display:"Bodoni Moda", "Didot", Georgia, serif;
+  --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-data:"IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1222; --surface:#131A2F; --ink:#E6E8F0; --muted:#8E96B0; --line:#252E4E;
+    --accent:#D9B76C; --accent-soft:#2A2840;
+    --moon-lit:#EEE8D4; --moon-lit-edge:#C9C0A4; --moon-dark:#1D2540; --moon-rim:#36406A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1222; --surface:#131A2F; --ink:#E6E8F0; --muted:#8E96B0; --line:#252E4E;
+  --accent:#D9B76C; --accent-soft:#2A2840;
+  --moon-lit:#EEE8D4; --moon-lit-edge:#C9C0A4; --moon-dark:#1D2540; --moon-rim:#36406A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:28px 56px;display:flex;flex-direction:column;gap:36px}
+h1,h2{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0;letter-spacing:-.01em}
+.eyebrow{font-family:var(--f-data);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-data);font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit}
+button:focus-visible,.day:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* top bar */
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-size:20px;font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:5px 12px;border-radius:999px;cursor:pointer;font-size:13px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.hemi{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:auto 1fr;gap:clamp(20px,5vw,56px);align-items:center}
+.hero-moon{width:clamp(150px,28vw,240px);aspect-ratio:1;max-width:100%}
+.hero-moon canvas{width:100%;height:100%;display:block}
+.hero-info{display:flex;flex-direction:column;gap:14px;min-width:0}
+.hero h1{font-size:clamp(34px,6vw,58px);line-height:1.02}
+.hero .date{color:var(--muted);font-size:15px}
+.stats{display:flex;flex-wrap:wrap;gap:10px 32px}
+.stat{display:flex;flex-direction:column}
+.stat b{font-family:var(--f-data);font-weight:500;font-size:22px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--muted)}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;max-width:420px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.bar-legend{display:flex;justify-content:space-between;max-width:420px;font-family:var(--f-data);font-size:11px;color:var(--muted);margin-top:4px}
+.back-today{align-self:flex-start;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 14px;cursor:pointer;font-size:13px}
+
+/* month */
+.month{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:28px;align-items:start}
+.cal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px clamp(10px,2vw,20px) 20px;min-width:0}
+.cal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.cal-head h2{font-size:clamp(22px,3.4vw,30px)}
+.nav{display:flex;gap:6px}
+.nav button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:16px;line-height:1}
+.nav .txt{width:auto;border-radius:999px;padding:0 14px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.wd{font-family:var(--f-data);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center;padding-bottom:6px}
+.day{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px 7px;border-radius:10px;border:1px solid transparent;background:transparent;cursor:pointer;min-height:92px}
+.day:hover{background:var(--bg)}
+.day.out{opacity:.35}
+.day .n{font-family:var(--f-data);font-size:12.5px;align-self:flex-start;padding-left:6px;line-height:1}
+.day canvas{width:30px;height:30px;display:block}
+.day .lbl{font-family:var(--f-data);font-size:10.5px;color:var(--muted);text-align:center;line-height:1.25}
+.day.key .lbl{color:var(--accent);font-weight:500}
+.day.today .n{background:var(--ink);color:var(--bg);border-radius:999px;padding:3px 6px;margin-top:-3px}
+.day.sel{border-color:var(--accent);background:var(--accent-soft)}
+
+.side{display:flex;flex-direction:column;gap:22px;min-width:0}
+.side h3{margin:0 0 8px;font-size:12px}
+.plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.plist li{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.plist li:last-child{border-bottom:0}
+.plist canvas{width:28px;height:28px}
+.plist .nm{font-weight:600;font-size:14px}
+.plist .when{font-size:12.5px;color:var(--muted)}
+.plist .rel{font-family:var(--f-data);font-size:12px;color:var(--muted);text-align:right}
+.tag{display:inline-block;font-family:var(--f-data);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);border:1px solid currentColor;border-radius:4px;padding:0 5px;margin-left:6px;vertical-align:1px}
+.note{font-size:13px;color:var(--muted);margin:0;max-width:60ch}
+
+/* year */
+.year-head{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.year-head h2{font-size:clamp(22px,3.4vw,30px)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:13.5px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--f-data);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+th canvas{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
+td.m{font-family:var(--f-display);font-weight:600;font-size:15px;text-transform:capitalize}
+td .d{font-family:var(--f-data);font-variant-numeric:tabular-nums;display:block;white-space:nowrap}
+td .d small{color:var(--muted);font-size:11.5px;margin-left:4px}
+tr.cur td{background:var(--accent-soft)}
+footer{font-size:12.5px;color:var(--muted);max-width:70ch}
+
+@media (max-width:820px){
+  .month{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .hero{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .hero-info{align-items:center}
+  .stats{justify-content:center}
+  .back-today{align-self:center}
+  .day{min-height:66px;padding:6px 0;gap:3px}
+  .day canvas{width:24px;height:24px}
+  .day .lbl .pct{display:none}
+  .day .n{padding-left:3px;font-size:11.5px}
+  .nav .txt{display:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .bar i{transition:width .4s ease}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand">Calendário Lunar</div>
+    <div class="hemi">
+      <span>Hemisfério</span>
+      <div class="seg" role="group" aria-label="Hemisfério">
+        <button id="h-sul" type="button" data-h="S">Sul</button>
+        <button id="h-norte" type="button" data-h="N">Norte</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="hero" aria-live="polite">
+    <div class="hero-moon"><canvas id="heroMoon" aria-hidden="true"></canvas></div>
+    <div class="hero-info">
+      <div class="eyebrow" id="heroEyebrow">Agora</div>
+      <h1 id="heroName">Lua</h1>
+      <div class="date" id="heroDate"></div>
+      <div class="stats">
+        <div class="stat"><b id="sIllum">–</b><span>iluminada</span></div>
+        <div class="stat"><b id="sAge">–</b><span>idade da lua</span></div>
+        <div class="stat"><b id="sNext">–</b><span id="sNextLbl">até a próxima fase</span></div>
+      </div>
+      <div>
+        <div class="bar" aria-hidden="true"><i id="cycleBar" style="width:0"></i></div>
+        <div class="bar-legend"><span>Nova</span><span>Q. Cresc.</span><span>Cheia</span><span>Q. Ming.</span><span>Nova</span></div>
+      </div>
+      <button class="back-today" id="backToday" type="button" hidden>Voltar para hoje</button>
+    </div>
+  </section>
+
+  <section class="month">
+    <div class="cal">
+      <div class="cal-head">
+        <h2 id="monthTitle">Mês</h2>
+        <div class="nav">
+          <button id="prevM" type="button" aria-label="Mês anterior">‹</button>
+          <button id="todayM" class="txt" type="button">Hoje</button>
+          <button id="nextM" type="button" aria-label="Próximo mês">›</button>
+        </div>
+      </div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <aside class="side">
+      <div>
+        <h3 class="eyebrow">Fases deste mês</h3>
+        <ul class="plist" id="monthPhases"></ul>
+      </div>
+      <div>
+        <h3 class="eyebrow">Próximas fases</h3>
+        <ul class="plist" id="upcoming"></ul>
+      </div>
+      <p class="note" id="hemiNote"></p>
+    </aside>
+  </section>
+
+  <section>
+    <div class="year-head">
+      <h2 id="yearTitle">Fases do ano</h2>
+      <span class="eyebrow" id="tzLabel"></span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr id="yearHead"></tr></thead>
+        <tbody id="yearBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    Horários calculados no seu navegador com os algoritmos de Jean Meeus (<i>Astronomical Algorithms</i>, cap. 48–49), com precisão de poucos minutos. A iluminação de cada dia é medida ao meio-dia local. Uma lua azul é a segunda lua cheia dentro do mesmo mês.
+  </footer>
+</div>
+
+<script>
+(function(){
+  const RAD = Math.PI/180;
+  const DAY = 86400000;
+  const PH = [0, .25, .5, .75];
+  const PH_NAME = ["Lua Nova","Quarto Crescente","Lua Cheia","Quarto Minguante"];
+  const PH_SHORT = ["Nova","Q. Cresc.","Cheia","Q. Ming."];
+  const PH_K = [0.002, 0.5, 0.998, 0.5];
+  const PH_WAX = [true, true, true, false];
+
+  // ---------- astronomy (Meeus) ----------
+  function jdToDate(jde){ return new Date((jde - 2440587.5) * DAY - 69000); } // TT -> UTC (ΔT ≈ 69 s)
+  function dateToJd(d){ return d.getTime()/DAY + 2440587.5; }
+  const s = x => Math.sin(x*RAD), c = x => Math.cos(x*RAD);
+
+  function truePhase(kk){
+    const ph = Math.round((kk - Math.floor(kk))*4)/4;
+    const T = kk/1236.85, T2=T*T, T3=T2*T, T4=T3*T;
+    let jde = 2451550.09766 + 29.530588861*kk + 0.00015437*T2 - 0.000000150*T3 + 0.00000000073*T4;
+    const E = 1 - 0.002516*T - 0.0000074*T2;
+    const M = 2.5534 + 29.10535670*kk - 0.0000014*T2 - 0.00000011*T3;
+    const Mp = 201.5643 + 385.81693528*kk + 0.0107582*T2 + 0.00001238*T3 - 0.000000058*T4;
+    const F = 160.7108 + 390.67050284*kk - 0.0016118*T2 - 0.00000227*T3 + 0.000000011*T4;
+    const Om = 124.7746 - 1.56375588*kk + 0.0020672*T2 + 0.00000215*T3;
+    let corr;
+    if (ph === 0 || ph === .5){
+      const nw = ph === 0;
+      corr = (nw?-0.40720:-0.40614)*s(Mp) + (nw?0.17241:0.17302)*E*s(M) + (nw?0.01608:0.01614)*s(2*Mp)
+        + (nw?0.01039:0.01043)*s(2*F) + (nw?0.00739:0.00734)*E*s(Mp-M) - (nw?0.00514:0.00515)*E*s(Mp+M)
+        + (nw?0.00208:0.00209)*E*E*s(2*M) - 0.00111*s(Mp-2*F) - 0.00057*s(Mp+2*F) + 0.00056*E*s(2*Mp+M)
+        - 0.00042*s(3*Mp) + 0.00042*E*s(M+2*F) + 0.00038*E*s(M-2*F) - 0.00024*E*s(2*Mp-M) - 0.00017*s(Om)
+        - 0.00007*s(Mp+2*M) + 0.00004*s(2*Mp-2*F) + 0.00004*s(3*M) + 0.00003*s(Mp+M-2*F) + 0.00003*s(2*Mp+2*F)
+        - 0.00003*s(Mp+M+2*F) + 0.00003*s(Mp-M+2*F) - 0.00002*s(Mp-M-2*F) - 0.00002*s(3*Mp+M) + 0.00002*s(4*Mp);
+    } else {
+      corr = -0.62801*s(Mp) + 0.17172*E*s(M) - 0.01183*E*s(Mp+M) + 0.00862*s(2*Mp) + 0.00804*s(2*F)
+        + 0.00454*E*s(Mp-M) + 0.00204*E*E*s(2*M) - 0.00180*s(Mp-2*F) - 0.00070*s(Mp+2*F) - 0.00040*s(3*Mp)
+        - 0.00034*E*s(2*Mp-M) + 0.00032*E*s(M+2*F) + 0.00032*E*s(M-2*F) - 0.00028*E*E*s(Mp+2*M)
+        + 0.00027*E*s(2*Mp+M) - 0.00017*s(Om) - 0.00005*s(Mp-M-2*F) + 0.00004*s(2*Mp+2*F)
+        - 0.00004*s(Mp+M+2*F) + 0.00004*s(Mp-2*M) + 0.00003*s(Mp+M-2*F) + 0.00003*s(3*M)
+        + 0.00002*s(2*Mp-2*F) + 0.00002*s(Mp-M+2*F) - 0.00002*s(3*Mp+M);
+      const W = 0.00306 - 0.00038*E*c(M) + 0.00026*c(Mp) - 0.00002*c(Mp-M) + 0.00002*c(Mp+M) + 0.00002*c(2*F);
+      corr += ph === .25 ? W : -W;
+    }
+    return jdToDate(jde + corr);
+  }
+
+  const phaseCache = new Map();
+  function phasesInRange(a, b){
+    const key = a.getTime()+":"+b.getTime();
+    if (phaseCache.has(key)) return phaseCache.get(key);
+    const y = a.getUTCFullYear() + a.getUTCMonth()/12;
+    let k = Math.floor((y - 2000)*12.3685) - 2;
+    const out = [];
+    for (let guard=0; guard<400; guard++, k++){
+      for (let i=0;i<4;i++){
+        const d = truePhase(k + PH[i]);
+        if (d > b){ phaseCache.set(key,out); return out; }
+        if (d >= a) out.push({type:i, date:d});
+      }
+    }
+    phaseCache.set(key,out); return out;
+  }
+
+  function moonState(d){
+    const T = (dateToJd(d) - 2451545)/36525;
+    const D = 297.8501921 + 445267.1114034*T - 0.0018819*T*T;
+    const M = 357.5291092 + 35999.0502909*T - 0.0001536*T*T;
+    const Mp = 134.9633964 + 477198.8675055*T + 0.0087414*T*T;
+    const i = 180 - D - 6.289*s(Mp) + 2.100*s(M) - 1.274*s(2*D-Mp) - 0.658*s(2*D) - 0.214*s(2*Mp) - 0.110*s(D);
+    const k = (1 + c(i))/2;
+    const elong = ((D % 360) + 360) % 360;
+    return {k, waxing: elong < 180, elong};
+  }
+
+  // ---------- helpers ----------
+  const fmtDay = new Intl.DateTimeFormat("pt-BR",{weekday:"long", day:"numeric", month:"long", year:"numeric"});
+  const fmtShort = new Intl.DateTimeFormat("pt-BR",{weekday:"short", day:"numeric", month:"short"});
+  const fmtDM = new Intl.DateTimeFormat("pt-BR",{day:"2-digit", month:"2-digit"});
+  const fmtTime = new Intl.DateTimeFormat("pt-BR",{hour:"2-digit", minute:"2-digit"});
+  const fmtMonth = new Intl.DateTimeFormat("pt-BR",{month:"long", year:"numeric"});
+  const fmtMonthOnly = new Intl.DateTimeFormat("pt-BR",{month:"long"});
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const sameDay = (a,b) => a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+  const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const noon = d => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12);
+
+  function relDays(from, to){
+    const ms = to - from;
+    if (ms < 0) return "passou";
+    const h = ms/3600000;
+    if (h < 24) return "em " + Math.round(h) + " h";
+    const d = Math.round(ms/DAY);
+    return "em " + d + (d===1?" dia":" dias");
+  }
+
+  function quadName(st){
+    const e = st.elong;
+    if (e < 90) return "Lua Crescente";
+    if (e < 180) return "Crescente Gibosa";
+    if (e < 270) return "Minguante Gibosa";
+    return "Lua Minguante";
+  }
+
+  // ---------- drawing ----------
+  let C = {};
+  function readColors(){
+    const cs = getComputedStyle(document.documentElement);
+    const g = n => cs.getPropertyValue(n).trim();
+    C = {lit:g("--moon-lit"), edge:g("--moon-lit-edge"), dark:g("--moon-dark"), rim:g("--moon-rim")};
+  }
+
+  function drawMoon(cv, k, waxing){
+    const rect = cv.getBoundingClientRect();
+    const size = Math.max(rect.width, 8);
+    const dpr = window.devicePixelRatio || 1;
+    const px = Math.round(size*dpr);
+    if (cv.width !== px){ cv.width = px; cv.height = px; }
+    const ctx = cv.getContext("2d");
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,size,size);
+    const r = size/2 - Math.max(.75, size*.02), cx = size/2, cy = size/2;
+    ctx.fillStyle = C.dark;
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+
+    const litRight = waxing !== (hemi === "S");
+    ctx.save();
+    ctx.translate(cx,cy);
+    if (!litRight) ctx.scale(-1,1);
+    if (k > 0.005){
+      const grad = ctx.createRadialGradient(-r*.25,-r*.25,r*.1,0,0,r);
+      grad.addColorStop(0, C.lit); grad.addColorStop(1, C.edge);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0,0,r,-Math.PI/2,Math.PI/2);
+      ctx.ellipse(0,0,Math.max(0.01, r*Math.abs(1-2*k)),r,0,Math.PI/2,-Math.PI/2,k<0.5);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+    ctx.strokeStyle = C.rim;
+    ctx.lineWidth = Math.max(.75, size*.012);
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
+  }
+
+  // ---------- state ----------
+  let hemi = "S";
+  try { const v = localStorage.getItem("lua-hemi"); if (v==="N"||v==="S") hemi = v; } catch(e){}
+  const now = new Date();
+  let selected = startOfDay(now);
+  let viewY = now.getFullYear(), viewM = now.getMonth();
+
+  const $ = id => document.getElementById(id);
+  const pending = [];
+  function queueMoon(cv,k,w){ pending.push([cv,k,w]); }
+  function flushMoons(){ for (const [cv,k,w] of pending) drawMoon(cv,k,w); }
+
+  function moonCanvas(k,w){ const cv=document.createElement("canvas"); cv.setAttribute("aria-hidden","true"); queueMoon(cv,k,w); return cv; }
+
+  function phaseItem(p, ref){
+    const li = document.createElement("li");
+    li.appendChild(moonCanvas(PH_K[p.type], PH_WAX[p.type]));
+    const mid = document.createElement("div");
+    mid.innerHTML = '<div class="nm"></div><div class="when mono"></div>';
+    mid.querySelector(".nm").textContent = PH_NAME[p.type];
+    if (p.blue){ const t=document.createElement("span"); t.className="tag"; t.textContent="lua azul"; mid.querySelector(".nm").appendChild(t); }
+    mid.querySelector(".when").textContent = fmtShort.format(p.date) + " · " + fmtTime.format(p.date);
+    li.appendChild(mid);
+    const rel = document.createElement("div"); rel.className="rel";
+    rel.textContent = ref ? relDays(ref, p.date) : "";
+    li.appendChild(rel);
+    return li;
+  }
+
+  function markBlue(list){
+    const seen = {};
+    for (const p of list){
+      if (p.type !== 2) continue;
+      const key = p.date.getFullYear()+"-"+p.date.getMonth();
+      if (seen[key]) p.blue = true; else seen[key] = true;
+    }
+    return list;
+  }
+
+  function renderHero(){
+    const isToday = sameDay(selected, now);
+    const t = isToday ? now : noon(selected);
+    const st = moonState(t);
+    const around = phasesInRange(new Date(t - 40*DAY), new Date(t.getTime() + 40*DAY));
+    const todays = around.find(p => sameDay(p.date, t));
+    const prevNew = [...around].reverse().find(p => p.type===0 && p.date <= t);
+    const nextNew = around.find(p => p.type===0 && p.date > t);
+    const next = around.find(p => p.date > t);
+
+    $("heroEyebrow").textContent = isToday ? "Agora · " + fmtTime.format(now) : "Dia selecionado · meio-dia";
+    $("heroName").textContent = todays ? PH_NAME[todays.type] : quadName(st);
+    $("heroDate").textContent = cap(fmtDay.format(t)) + (todays ? " · fase exata às " + fmtTime.format(todays.date) : "");
+    $("sIllum").textContent = Math.round(st.k*100) + "%";
+    const age = prevNew ? (t - prevNew.date)/DAY : 0;
+    $("sAge").textContent = age.toFixed(1).replace(".",",") + " d";
+    if (next){
+      $("sNext").textContent = relDays(t, next.date).replace("em ","");
+      $("sNextLbl").textContent = "até " + PH_NAME[next.type].replace("Lua ","a lua ").replace("Quarto","o quarto").toLowerCase();
+    }
+    const frac = (prevNew && nextNew) ? (t - prevNew.date)/(nextNew.date - prevNew.date) : 0;
+    $("cycleBar").style.width = (frac*100).toFixed(1) + "%";
+    $("backToday").hidden = isToday;
+    queueMoon($("heroMoon"), st.k, st.waxing);
+  }
+
+  function renderMonth(){
+    const first = new Date(viewY, viewM, 1);
+    const last = new Date(viewY, viewM+1, 0);
+    $("monthTitle").textContent = cap(fmtMonth.format(first));
+    const gridStart = new Date(viewY, viewM, 1 - first.getDay());
+    const cells = Math.ceil((first.getDay() + last.getDate())/7)*7;
+    const gridEnd = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate()+cells);
+    const phases = markBlue(phasesInRange(new Date(viewY, viewM-1, 1), new Date(viewY, viewM+2, 1)))
+      .filter(p => p.date >= gridStart && p.date < gridEnd);
+
+    const g = $("grid"); g.innerHTML = "";
+    ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].forEach(w => { const d=document.createElement("div"); d.className="wd"; d.textContent=w; g.appendChild(d); });
+    for (let i=0;i<cells;i++){
+      const d = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate()+i);
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "day";
+      if (d.getMonth() !== viewM) b.classList.add("out");
+      if (sameDay(d, now)) b.classList.add("today");
+      if (sameDay(d, selected)) b.classList.add("sel");
+      const key = phases.find(p => sameDay(p.date, d));
+      const st = moonState(noon(d));
+      const n = document.createElement("span"); n.className="n"; n.textContent = d.getDate(); b.appendChild(n);
+      b.appendChild(key ? moonCanvas(PH_K[key.type], PH_WAX[key.type]) : moonCanvas(st.k, st.waxing));
+      const lbl = document.createElement("span"); lbl.className="lbl";
+      if (key){ b.classList.add("key"); lbl.textContent = PH_SHORT[key.type] + " " + fmtTime.format(key.date); }
+      else { lbl.innerHTML = '<span class="pct"></span>'; lbl.firstChild.textContent = Math.round(st.k*100) + "%"; }
+      b.appendChild(lbl);
+      b.setAttribute("aria-label", cap(fmtDay.format(d)) + ", " + (key ? PH_NAME[key.type] : quadName(st)) + ", " + Math.round(st.k*100) + "% iluminada");
+      b.addEventListener("click", () => {
+        selected = d;
+        if (d.getMonth() !== viewM){ viewY = d.getFullYear(); viewM = d.getMonth(); }
+        render();
+      });
+      g.appendChild(b);
+    }
+
+    const mp = $("monthPhases"); mp.innerHTML = "";
+    phases.filter(p => p.date.getMonth()===viewM && p.date.getFullYear()===viewY).forEach(p => mp.appendChild(phaseItem(p, null)));
+  }
+
+  function renderUpcoming(){
+    const list = markBlue(phasesInRange(new Date(now.getFullYear(), now.getMonth(), 1), new Date(now.getTime() + 45*DAY)))
+      .filter(p => p.date > now).slice(0,4);
+    const ul = $("upcoming"); ul.innerHTML = "";
+    list.forEach(p => ul.appendChild(phaseItem(p, now)));
+    $("hemiNote").textContent = hemi === "S"
+      ? "No hemisfério Sul a lua crescente aparece iluminada pelo lado esquerdo, formando um C. A minguante aparece como um D."
+      : "No hemisfério Norte a lua crescente aparece iluminada pelo lado direito, formando um D. A minguante aparece como um C.";
+  }
+
+  function renderYear(){
+    $("yearTitle").textContent = "Fases de " + viewY;
+    const head = $("yearHead"); head.innerHTML = "<th>Mês</th>";
+    for (let i=0;i<4;i++){
+      const th = document.createElement("th");
+      th.appendChild(moonCanvas(PH_K[i], PH_WAX[i]));
+      th.appendChild(document.createTextNode(PH_SHORT[i]));
+      head.appendChild(th);
+    }
+    const list = markBlue(phasesInRange(new Date(viewY,0,1), new Date(viewY+1,0,1)));
+    const body = $("yearBody"); body.innerHTML = "";
+    for (let m=0;m<12;m++){
+      const tr = document.createElement("tr");
+      if (m === viewM) tr.className = "cur";
+      const tdm = document.createElement("td"); tdm.className="m"; tdm.textContent = fmtMonthOnly.format(new Date(viewY,m,1)); tr.appendChild(tdm);
+      for (let i=0;i<4;i++){
+        const td = document.createElement("td");
+        list.filter(p => p.type===i && p.date.getMonth()===m).forEach(p => {
+          const sp = document.createElement("span"); sp.className="d";
+          sp.textContent = fmtDM.format(p.date);
+          const sm = document.createElement("small"); sm.textContent = fmtTime.format(p.date); sp.appendChild(sm);
+          if (p.blue){ const t=document.createElement("span"); t.className="tag"; t.textContent="azul"; sp.appendChild(t); }
+          td.appendChild(sp);
+        });
+        if (!td.childNodes.length) td.textContent = "—";
+        tr.appendChild(td);
+      }
+      body.appendChild(tr);
+    }
+    let tz = "";
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e){}
+    const off = -new Date(viewY,6,1).getTimezoneOffset()/60;
+    $("tzLabel").textContent = "Horário local" + (tz ? " · " + tz.replace(/_/g," ") : "") + " · UTC" + (off>=0?"+":"") + off;
+  }
+
+  function render(){
+    pending.length = 0;
+    readColors();
+    renderHero(); renderMonth(); renderUpcoming(); renderYear();
+    $("h-sul").setAttribute("aria-pressed", hemi==="S");
+    $("h-norte").setAttribute("aria-pressed", hemi==="N");
+    requestAnimationFrame(flushMoons);
+  }
+
+  // ---------- events ----------
+  $("prevM").onclick = () => { viewM--; if (viewM<0){viewM=11;viewY--;} render(); };
+  $("nextM").onclick = () => { viewM++; if (viewM>11){viewM=0;viewY++;} render(); };
+  $("todayM").onclick = $("backToday").onclick = () => { selected = startOfDay(now); viewY = now.getFullYear(); viewM = now.getMonth(); render(); };
+  document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+    hemi = b.dataset.h;
+    try { localStorage.setItem("lua-hemi", hemi); } catch(e){}
+    render();
+  });
+  document.addEventListener("keydown", e => {
+    if (e.target.closest && e.target.closest("input,textarea")) return;
+    if (e.key === "ArrowLeft" && e.altKey) $("prevM").click();
+    if (e.key === "ArrowRight" && e.altKey) $("nextM").click();
+  });
+  const redraw = () => { readColors(); flushMoons(); };
+  try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw); } catch(e){}
+  new MutationObserver(redraw).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
+  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(flushMoons, 120); });
+
+  render();
+  window.__lua = {truePhase, phasesInRange, moonState};
+})();
+</script>
+</body>
+</html>
