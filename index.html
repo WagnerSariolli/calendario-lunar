@@ -3,97 +3,129 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Fase da lua de hoje, calendário mensal e fases principais do ano no horário local.">
-<meta name="theme-color" content="#0C1222">
+<meta name="description" content="Fase da lua ao vivo, calendário mensal e fases principais do ano no horário local.">
+<meta name="theme-color" content="#03050C">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%231D2540'/%3E%3Cpath d='M16 2a14 14 0 0 1 0 28a8 14 0 0 0 0-28z' fill='%23EEE8D4'/%3E%3C/svg%3E">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Calendário Lunar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Figtree:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: almanac page — current moon as the hero, month grid with a phase column beside it, a year table of principal phases below */
+/* Layout: night-sky almanac — a slowly turning starfield behind everything, the live moon as hero, month grid with a phase column, year table below. Single dark theme by choice. */
 :root{
-  --bg:#E8EBF2; --surface:#F6F7FB; --ink:#18203A; --muted:#58617D; --line:#CBD1DF;
-  --accent:#7A5A1A; --accent-soft:#EFE6D2;
-  --moon-lit:#FBF6E4; --moon-lit-edge:#E3DAC0; --moon-dark:#2B3350; --moon-rim:#8E98B3;
+  --sky:#03050C;
+  --glass:rgba(11,16,34,.74); --glass-hi:rgba(20,27,52,.8);
+  --ink:#ECE9E1; --muted:#A6ADC4; --faint:#7A829E;
+  --line:rgba(160,175,225,.17);
+  --accent:#E6CB8E; --accent-soft:rgba(230,203,142,.13);
+  --live:#86DDBC;
   --f-display:"Bodoni Moda", "Didot", Georgia, serif;
   --f-body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-data:"IBM Plex Mono", ui-monospace, Consolas, monospace;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0C1222; --surface:#131A2F; --ink:#E6E8F0; --muted:#8E96B0; --line:#252E4E;
-    --accent:#D9B76C; --accent-soft:#2A2840;
-    --moon-lit:#EEE8D4; --moon-lit-edge:#C9C0A4; --moon-dark:#1D2540; --moon-rim:#36406A;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0C1222; --surface:#131A2F; --ink:#E6E8F0; --muted:#8E96B0; --line:#252E4E;
-  --accent:#D9B76C; --accent-soft:#2A2840;
-  --moon-lit:#EEE8D4; --moon-lit-edge:#C9C0A4; --moon-dark:#1D2540; --moon-rim:#36406A;
   color-scheme:dark;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
-.wrap{max-width:1080px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:28px 56px;display:flex;flex-direction:column;gap:36px}
+html{background:var(--sky)}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--sky);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;min-height:100vh}
+[hidden]{display:none!important}
+
+/* ---------- sky ---------- */
+.sky{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+  background:
+    radial-gradient(ellipse 130% 55% at 50% 118%, rgba(38,62,130,.42) 0%, rgba(22,36,82,.2) 40%, transparent 70%),
+    radial-gradient(ellipse 120% 90% at 50% 0%, #080D20 0%, var(--sky) 70%)}
+.sky .rot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);animation:spin 2400s linear infinite}
+.sky.ccw .rot{animation-direction:reverse}
+.sky .rot canvas{position:absolute;left:0;top:0}
+.sky .fx{position:absolute;inset:0;width:100%;height:100%}
+@keyframes spin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+
+.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:24px 56px;display:flex;flex-direction:column;gap:40px}
 h1,h2{font-family:var(--f-display);font-weight:600;text-wrap:balance;margin:0;letter-spacing:-.01em}
 .eyebrow{font-family:var(--f-data);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .mono{font-family:var(--f-data);font-variant-numeric:tabular-nums}
 button{font:inherit;color:inherit}
 button:focus-visible,.day:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+/* rolling digits */
+.roll{display:inline-flex;white-space:pre}
+.roll .s{display:inline-block;position:relative;overflow:hidden;height:1.18em;line-height:1.18em;perspective:240px;vertical-align:bottom}
+.roll .s>span{display:block;backface-visibility:hidden;transform-origin:50% 50%}
+.roll .s>span.o{position:absolute;left:0;top:0}
+.in-up{animation:inUp .52s cubic-bezier(.2,.8,.25,1) both}
+.out-up{animation:outUp .36s cubic-bezier(.55,0,.8,.45) both}
+.in-down{animation:inDown .52s cubic-bezier(.2,.8,.25,1) both}
+.out-down{animation:outDown .36s cubic-bezier(.55,0,.8,.45) both}
+@keyframes inUp{from{transform:translateY(80%) rotateX(-80deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes outUp{from{opacity:1}to{transform:translateY(-80%) rotateX(80deg);opacity:0}}
+@keyframes inDown{from{transform:translateY(-80%) rotateX(80deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes outDown{from{opacity:1}to{transform:translateY(80%) rotateX(-80deg);opacity:0}}
+
 /* top bar */
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .brand{font-family:var(--f-display);font-size:20px;font-weight:600}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;background:var(--surface)}
-.seg button{border:0;background:transparent;padding:5px 12px;border-radius:999px;cursor:pointer;font-size:13px;color:var(--muted)}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px;background:var(--glass)}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;cursor:pointer;font-size:13px;color:var(--muted);min-height:32px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--sky)}
 .hemi{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
 
 /* hero */
-.hero{display:grid;grid-template-columns:auto 1fr;gap:clamp(20px,5vw,56px);align-items:center}
-.hero-moon{width:clamp(150px,28vw,240px);aspect-ratio:1;max-width:100%}
-.hero-moon canvas{width:100%;height:100%;display:block}
-.hero-info{display:flex;flex-direction:column;gap:14px;min-width:0}
-.hero h1{font-size:clamp(34px,6vw,58px);line-height:1.02}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:clamp(24px,6vw,72px);align-items:center;padding-block:12px}
+.hero-moon{position:relative;width:clamp(190px,32vw,300px);aspect-ratio:1;max-width:100%}
+.hero-moon::before{content:"";position:absolute;inset:-38%;border-radius:50%;
+  background:radial-gradient(circle, rgba(236,228,205,.26) 0%, rgba(200,210,235,.08) 34%, transparent 64%);
+  opacity:var(--glow,.5);transition:opacity 2s ease}
+.hero-moon canvas{position:relative;width:100%;height:100%;display:block}
+.hero-info{display:flex;flex-direction:column;gap:16px;min-width:0}
+.live{display:inline-flex;align-items:center;gap:8px}
+.live .dot{width:8px;height:8px;border-radius:50%;background:var(--live);box-shadow:0 0 0 0 rgba(134,221,188,.6);animation:pulse 2s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(134,221,188,.55)}70%{box-shadow:0 0 0 9px rgba(134,221,188,0)}100%{box-shadow:0 0 0 0 rgba(134,221,188,0)}}
+.hero h1{font-size:clamp(36px,6.4vw,64px);line-height:1.02;transition:opacity .5s ease}
+.hero h1.swap{opacity:0}
 .hero .date{color:var(--muted);font-size:15px}
-.stats{display:flex;flex-wrap:wrap;gap:10px 32px}
-.stat{display:flex;flex-direction:column}
-.stat b{font-family:var(--f-data);font-weight:500;font-size:22px;font-variant-numeric:tabular-nums}
+.stats{display:flex;flex-wrap:wrap;gap:12px 34px}
+.stat{display:flex;flex-direction:column;min-width:0}
+.stat b{font-family:var(--f-data);font-weight:500;font-size:21px;font-variant-numeric:tabular-nums}
 .stat span{font-size:12.5px;color:var(--muted)}
-.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;max-width:420px}
-.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
-.bar-legend{display:flex;justify-content:space-between;max-width:420px;font-family:var(--f-data);font-size:11px;color:var(--muted);margin-top:4px}
-.back-today{align-self:flex-start;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 14px;cursor:pointer;font-size:13px}
+.next{display:flex;flex-direction:column;gap:4px;padding:14px 18px;border:1px solid var(--line);border-radius:14px;background:var(--glass);max-width:440px}
+.next .cd{font-family:var(--f-data);font-size:clamp(26px,4vw,34px);font-weight:500;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1.15}
+.next .when{font-size:13px;color:var(--muted)}
+.bar{position:relative;height:4px;border-radius:2px;background:var(--line);max-width:440px}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg, rgba(230,203,142,.25), var(--accent));border-radius:2px}
+.bar b{position:absolute;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:var(--ink);box-shadow:0 0 10px 2px rgba(236,228,205,.55)}
+.cycle{width:100%;max-width:440px}
+.bar-legend{display:flex;gap:6px;justify-content:space-between;max-width:440px;font-family:var(--f-data);font-size:11px;color:var(--faint);margin-top:6px}
+.back-today{align-self:flex-start;border:1px solid var(--line);background:var(--glass);border-radius:999px;padding:7px 16px;cursor:pointer;font-size:13px;min-height:36px}
 
 /* month */
-.month{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:28px;align-items:start}
-.cal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px clamp(10px,2vw,20px) 20px;min-width:0}
+.month{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:28px;align-items:start}
+.cal{background:var(--glass);border:1px solid var(--line);border-radius:16px;padding:18px clamp(10px,2vw,20px) 20px;min-width:0}
 .cal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .cal-head h2{font-size:clamp(22px,3.4vw,30px)}
-.nav{display:flex;gap:6px}
-.nav button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-size:16px;line-height:1}
-.nav .txt{width:auto;border-radius:999px;padding:0 14px;font-size:13px}
+.nav{display:flex;gap:8px}
+.nav button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--glass-hi);cursor:pointer;font-size:17px;line-height:1}
+.nav button:hover{border-color:var(--accent)}
+.nav .txt{width:auto;border-radius:999px;padding:0 16px;font-size:13px}
 .grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
 .wd{font-family:var(--f-data);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center;padding-bottom:6px}
-.day{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px 7px;border-radius:10px;border:1px solid transparent;background:transparent;cursor:pointer;min-height:92px}
-.day:hover{background:var(--bg)}
+.day{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 2px 7px;border-radius:10px;border:1px solid transparent;background:transparent;cursor:pointer;min-height:94px;transition:background .2s ease,border-color .2s ease}
+.day:hover{background:rgba(160,175,225,.07)}
 .day.out{opacity:.35}
 .day .n{font-family:var(--f-data);font-size:12.5px;align-self:flex-start;padding-left:6px;line-height:1}
-.day canvas{width:30px;height:30px;display:block}
+.day canvas{width:32px;height:32px;display:block}
 .day .lbl{font-family:var(--f-data);font-size:10.5px;color:var(--muted);text-align:center;line-height:1.25}
 .day.key .lbl{color:var(--accent);font-weight:500}
-.day.today .n{background:var(--ink);color:var(--bg);border-radius:999px;padding:3px 6px;margin-top:-3px}
+.day.today .n{background:var(--ink);color:var(--sky);border-radius:999px;padding:3px 6px;margin-top:-3px}
 .day.sel{border-color:var(--accent);background:var(--accent-soft)}
 
 .side{display:flex;flex-direction:column;gap:22px;min-width:0}
-.side h3{margin:0 0 8px;font-size:12px}
+.side h3{margin:0 0 6px;font-size:12px}
 .plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
-.plist li{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.plist li{display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 .plist li:last-child{border-bottom:0}
-.plist canvas{width:28px;height:28px}
+.plist canvas{width:30px;height:30px}
 .plist .nm{font-weight:600;font-size:14px}
 .plist .when{font-size:12.5px;color:var(--muted)}
 .plist .rel{font-family:var(--f-data);font-size:12px;color:var(--muted);text-align:right}
@@ -103,38 +135,45 @@ button:focus-visible,.day:focus-visible{outline:2px solid var(--accent);outline-
 /* year */
 .year-head{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:12px}
 .year-head h2{font-size:clamp(22px,3.4vw,30px)}
-.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--glass)}
 table{border-collapse:collapse;width:100%;min-width:560px;font-size:13.5px}
 th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
 tr:last-child td{border-bottom:0}
 th{font-family:var(--f-data);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-th canvas{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
+th canvas{width:18px;height:18px;vertical-align:-4px;margin-right:6px}
 td.m{font-family:var(--f-display);font-weight:600;font-size:15px;text-transform:capitalize}
 td .d{font-family:var(--f-data);font-variant-numeric:tabular-nums;display:block;white-space:nowrap}
 td .d small{color:var(--muted);font-size:11.5px;margin-left:4px}
 tr.cur td{background:var(--accent-soft)}
-footer{font-size:12.5px;color:var(--muted);max-width:70ch}
+footer{font-size:12.5px;color:var(--muted);max-width:72ch}
 
-@media (max-width:820px){
-  .month{grid-template-columns:1fr}
-}
+@media (max-width:820px){ .month{grid-template-columns:1fr} }
 @media (max-width:560px){
   .hero{grid-template-columns:1fr;justify-items:center;text-align:center}
   .hero-info{align-items:center}
   .stats{justify-content:center}
+  .next{align-items:center;width:100%}
+  .bar-legend{font-size:10px}
   .back-today{align-self:center}
-  .day{min-height:66px;padding:6px 0;gap:3px}
-  .day canvas{width:24px;height:24px}
+  .day{min-height:68px;padding:6px 0;gap:3px}
+  .day canvas{width:26px;height:26px}
   .day .lbl .pct{display:none}
   .day .n{padding-left:3px;font-size:11.5px}
   .nav .txt{display:none}
 }
-@media (prefers-reduced-motion:no-preference){
-  .bar i{transition:width .4s ease}
+@media (prefers-reduced-motion:reduce){
+  .sky .rot{animation:none}
+  .live .dot{animation:none}
+  .in-up,.out-up,.in-down,.out-down{animation:none}
+  .roll .s>span.o{display:none}
 }
 </style>
 </head>
 <body>
+<div class="sky" id="sky" aria-hidden="true">
+  <div class="rot" id="skyRot"><canvas id="skyStars"></canvas><canvas id="skyTwinkle"></canvas></div>
+  <canvas class="fx" id="skyFx"></canvas>
+</div>
 
 <div class="wrap">
   <div class="top">
@@ -148,22 +187,27 @@ footer{font-size:12.5px;color:var(--muted);max-width:70ch}
     </div>
   </div>
 
-  <section class="hero" aria-live="polite">
-    <div class="hero-moon"><canvas id="heroMoon" aria-hidden="true"></canvas></div>
+  <section class="hero">
+    <div class="hero-moon"><canvas id="heroMoon" role="img" aria-label="Aparência atual da lua"></canvas></div>
     <div class="hero-info">
-      <div class="eyebrow" id="heroEyebrow">Agora</div>
+      <div class="eyebrow live" id="heroEyebrow"><span class="dot" id="liveDot"></span><span id="heroMode">Ao vivo</span><span>·</span><span id="clock"></span></div>
       <h1 id="heroName">Lua</h1>
       <div class="date" id="heroDate"></div>
       <div class="stats">
         <div class="stat"><b id="sIllum">–</b><span>iluminada</span></div>
         <div class="stat"><b id="sAge">–</b><span>idade da lua</span></div>
-        <div class="stat"><b id="sNext">–</b><span id="sNextLbl">até a próxima fase</span></div>
+        <div class="stat"><b id="sDist">–</b><span>distância da Terra</span></div>
       </div>
-      <div>
-        <div class="bar" aria-hidden="true"><i id="cycleBar" style="width:0"></i></div>
+      <div class="next">
+        <span class="eyebrow" id="nextLbl">Próxima fase</span>
+        <span class="cd" id="countdown">–</span>
+        <span class="when" id="nextWhen"></span>
+      </div>
+      <div class="cycle">
+        <div class="bar" aria-hidden="true"><i id="cycleBar" style="width:0"></i><b id="cycleDot" style="left:0"></b></div>
         <div class="bar-legend"><span>Nova</span><span>Q. Cresc.</span><span>Cheia</span><span>Q. Ming.</span><span>Nova</span></div>
       </div>
-      <button class="back-today" id="backToday" type="button" hidden>Voltar para hoje</button>
+      <button class="back-today" id="backToday" type="button" hidden>Voltar para agora</button>
     </div>
   </section>
 
@@ -206,7 +250,7 @@ footer{font-size:12.5px;color:var(--muted);max-width:70ch}
   </section>
 
   <footer>
-    Horários calculados no seu navegador com os algoritmos de Jean Meeus (<i>Astronomical Algorithms</i>, cap. 48–49), com precisão de poucos minutos. A iluminação de cada dia é medida ao meio-dia local. Uma lua azul é a segunda lua cheia dentro do mesmo mês.
+    Fases, iluminação e distância calculadas no seu navegador com os algoritmos de Jean Meeus (<i>Astronomical Algorithms</i>, cap. 47–49). Os horários têm precisão de poucos minutos e a distância, de algumas dezenas de quilômetros. A iluminação de cada dia do calendário é medida ao meio-dia local. Uma lua azul é a segunda lua cheia dentro do mesmo mês. O céu de fundo é ilustrativo e gira mais rápido que o céu real.
   </footer>
 </div>
 
@@ -217,8 +261,9 @@ footer{font-size:12.5px;color:var(--muted);max-width:70ch}
   const PH = [0, .25, .5, .75];
   const PH_NAME = ["Lua Nova","Quarto Crescente","Lua Cheia","Quarto Minguante"];
   const PH_SHORT = ["Nova","Q. Cresc.","Cheia","Q. Ming."];
-  const PH_K = [0.002, 0.5, 0.998, 0.5];
+  const PH_K = [0, 0.5, 1, 0.5];
   const PH_WAX = [true, true, true, false];
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ---------- astronomy (Meeus) ----------
   function jdToDate(jde){ return new Date((jde - 2440587.5) * DAY - 69000); } // TT -> UTC (ΔT ≈ 69 s)
@@ -260,6 +305,7 @@ footer{font-size:12.5px;color:var(--muted);max-width:70ch}
   function phasesInRange(a, b){
     const key = a.getTime()+":"+b.getTime();
     if (phaseCache.has(key)) return phaseCache.get(key);
+    if (phaseCache.size > 200) phaseCache.clear();
     const y = a.getUTCFullYear() + a.getUTCMonth()/12;
     let k = Math.floor((y - 2000)*12.3685) - 2;
     const out = [];
@@ -273,15 +319,38 @@ footer{font-size:12.5px;color:var(--muted);max-width:70ch}
     phaseCache.set(key,out); return out;
   }
 
-  function moonState(d){
+  function lunarArgs(d){
     const T = (dateToJd(d) - 2451545)/36525;
-    const D = 297.8501921 + 445267.1114034*T - 0.0018819*T*T;
-    const M = 357.5291092 + 35999.0502909*T - 0.0001536*T*T;
-    const Mp = 134.9633964 + 477198.8675055*T + 0.0087414*T*T;
+    return {
+      T,
+      D: 297.8501921 + 445267.1114034*T - 0.0018819*T*T,
+      M: 357.5291092 + 35999.0502909*T - 0.0001536*T*T,
+      Mp: 134.9633964 + 477198.8675055*T + 0.0087414*T*T,
+      F: 93.2720950 + 483202.0175233*T - 0.0036539*T*T,
+      E: 1 - 0.002516*T - 0.0000074*T*T
+    };
+  }
+
+  function moonState(d){
+    const {D,M,Mp} = lunarArgs(d);
     const i = 180 - D - 6.289*s(Mp) + 2.100*s(M) - 1.274*s(2*D-Mp) - 0.658*s(2*D) - 0.214*s(2*Mp) - 0.110*s(D);
     const k = (1 + c(i))/2;
     const elong = ((D % 360) + 360) % 360;
     return {k, waxing: elong < 180, elong};
+  }
+
+  // Earth–Moon distance in km (Meeus ch. 47, main terms)
+  function moonDistance(d){
+    const {D,M,Mp,F,E} = lunarArgs(d);
+    return 385000.56
+      - 20905.355*c(Mp) - 3699.111*c(2*D-Mp) - 2955.968*c(2*D) - 569.925*c(2*Mp)
+      + 48.888*E*c(M) - 3.149*c(2*F) + 246.158*c(2*D-2*Mp) - 152.138*E*c(2*D-M-Mp)
+      - 170.733*c(2*D+Mp) - 204.586*E*c(2*D-M) - 129.620*E*c(M-Mp) + 108.743*c(D)
+      + 104.755*E*c(M+Mp) + 10.321*c(2*D-2*F) + 79.661*c(Mp-2*F) - 34.782*c(4*D-Mp)
+      - 23.210*c(3*Mp) - 21.636*c(4*D-2*Mp) + 24.208*E*c(2*D+M-Mp) + 30.824*E*c(2*D+M)
+      - 8.379*c(D-Mp) - 16.675*E*c(D+M) - 12.831*E*c(2*D-M+Mp) - 10.445*c(2*D+2*Mp)
+      - 11.650*c(4*D) + 14.403*c(2*D-3*Mp) - 7.003*E*c(M-2*Mp) + 10.056*E*c(2*D-M-2*Mp)
+      + 6.322*c(D+Mp) - 9.884*E*E*c(2*D-2*M);
   }
 
   // ---------- helpers ----------
@@ -289,9 +358,13 @@ footer{font-size:12.5px;color:var(--muted);max-width:70ch}
   const fmtShort = new Intl.DateTimeFormat("pt-BR",{weekday:"short", day:"numeric", month:"short"});
   const fmtDM = new Intl.DateTimeFormat("pt-BR",{day:"2-digit", month:"2-digit"});
   const fmtTime = new Intl.DateTimeFormat("pt-BR",{hour:"2-digit", minute:"2-digit"});
+  const fmtClock = new Intl.DateTimeFormat("pt-BR",{hour:"2-digit", minute:"2-digit", second:"2-digit"});
   const fmtMonth = new Intl.DateTimeFormat("pt-BR",{month:"long", year:"numeric"});
   const fmtMonthOnly = new Intl.DateTimeFormat("pt-BR",{month:"long"});
+  const fmtInt = new Intl.NumberFormat("pt-BR",{maximumFractionDigits:0});
+  const fmtPct = new Intl.NumberFormat("pt-BR",{minimumFractionDigits:2, maximumFractionDigits:2});
   const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const pad = n => String(n).padStart(2,"0");
   const sameDay = (a,b) => a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
   const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const noon = d => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12);
@@ -300,11 +373,10 @@ footer{font-size:12.5px;color:var(--muted);max-width:70ch}
     const ms = to - from;
     if (ms < 0) return "passou";
     const h = ms/3600000;
-    if (h < 24) return "em " + Math.round(h) + " h";
+    if (h < 24) return "em " + Math.max(1, Math.round(h)) + " h";
     const d = Math.round(ms/DAY);
     return "em " + d + (d===1?" dia":" dias");
   }
-
   function quadName(st){
     const e = st.elong;
     if (e < 90) return "Lua Crescente";
@@ -312,60 +384,258 @@ footer{font-size:12.5px;color:var(--muted);max-width:70ch}
     if (e < 270) return "Minguante Gibosa";
     return "Lua Minguante";
   }
+  function mulberry(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 
-  // ---------- drawing ----------
-  let C = {};
-  function readColors(){
-    const cs = getComputedStyle(document.documentElement);
-    const g = n => cs.getPropertyValue(n).trim();
-    C = {lit:g("--moon-lit"), edge:g("--moon-lit-edge"), dark:g("--moon-dark"), rim:g("--moon-rim")};
+  // ---------- rolling digits ----------
+  function roll(el, str, dir){
+    if (el._v === str) return;
+    const chars = Array.from(str);
+    const first = el._v == null || !el._slots || el._slots.length !== chars.length;
+    el._v = str;
+    if (first || reduce){
+      el.classList.add("roll"); el.textContent = ""; el._slots = [];
+      chars.forEach(ch => { const sl=document.createElement("span"); sl.className="s"; const i=document.createElement("span"); i.textContent=ch; sl.appendChild(i); el.appendChild(sl); el._slots.push(sl); });
+      return;
+    }
+    chars.forEach((ch, idx) => {
+      const sl = el._slots[idx];
+      const cur = sl.lastElementChild;
+      if (cur.textContent === ch) return;
+      sl.querySelectorAll(".o").forEach(n => n.remove());
+      cur.className = "o out-" + dir;
+      const n = document.createElement("span"); n.textContent = ch; n.className = "in-" + dir;
+      sl.appendChild(n);
+      setTimeout(() => cur.remove(), 400);
+    });
   }
 
+  // ---------- realistic moon ----------
+  const TEX = (function makeMoonTexture(){
+    const N = 512, R = N/2, rnd = mulberry(1969);
+    const cv = document.createElement("canvas"); cv.width = cv.height = N;
+    const g = cv.getContext("2d");
+    g.save(); g.beginPath(); g.arc(R,R,R,0,Math.PI*2); g.clip();
+    let gr = g.createRadialGradient(R*.92,R*.88,R*.1,R,R,R);
+    gr.addColorStop(0,"#DCD7CC"); gr.addColorStop(1,"#BDB7AB");
+    g.fillStyle = gr; g.fillRect(0,0,N,N);
+    for (let i=0;i<3200;i++){
+      const x=rnd()*N, y=rnd()*N, r=rnd()*N*.012+.5;
+      g.fillStyle = rnd()<.5 ? "rgba(255,255,250,.045)" : "rgba(70,66,60,.05)";
+      g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill();
+    }
+    // maria: [x, y, rx, ry, darkness] in disc units, northern-hemisphere view
+    const maria = [
+      [-.30,-.44,.27,.22,.13],[.18,-.37,.17,.16,.14],[.31,-.11,.2,.17,.13],[.68,-.29,.11,.13,.16],
+      [.55,.12,.13,.19,.11],[.37,.27,.09,.09,.11],[-.15,.36,.17,.13,.11],[-.62,-.05,.24,.42,.1],
+      [-.46,.44,.09,.09,.12],[-.05,-.71,.36,.08,.06],[.05,-.22,.08,.07,.1],[-.3,.02,.11,.09,.09],
+      [-.2,.2,.1,.08,.09],[-.47,-.33,.12,.12,.08],[.05,-.03,.07,.06,.08]
+    ];
+    g.globalCompositeOperation = "source-over";
+    maria.forEach(([x,y,rx,ry,dk]) => {
+      for (let j=0;j<16;j++){
+        const px = R + (x + (rnd()-.5)*rx*1.1)*R, py = R + (y + (rnd()-.5)*ry*1.1)*R;
+        const rr = (.45 + rnd()*.55) * Math.max(rx,ry) * R;
+        g.save(); g.translate(px,py); g.scale(rx/Math.max(rx,ry), ry/Math.max(rx,ry));
+        const mg = g.createRadialGradient(0,0,0,0,0,rr);
+        mg.addColorStop(0,`rgba(72,74,80,${dk})`); mg.addColorStop(.7,`rgba(72,74,80,${dk*.7})`); mg.addColorStop(1,"rgba(72,74,80,0)");
+        g.fillStyle = mg; g.beginPath(); g.arc(0,0,rr,0,Math.PI*2); g.fill();
+        g.restore();
+      }
+    });
+    for (let i=0;i<260;i++){
+      const a=rnd()*Math.PI*2, d=Math.sqrt(rnd())*R*.96;
+      const x=R+Math.cos(a)*d, y=R+Math.sin(a)*d, r=N*(.003+Math.pow(rnd(),3)*.022);
+      g.fillStyle="rgba(45,42,38,.15)"; g.beginPath(); g.arc(x+r*.18,y+r*.18,r,0,Math.PI*2); g.fill();
+      g.fillStyle="rgba(255,253,245,.09)"; g.beginPath(); g.arc(x-r*.12,y-r*.12,r*.82,0,Math.PI*2); g.fill();
+    }
+    // bright ray craters: Tycho, Copernicus, Kepler, Aristarchus
+    [[-.12,.68,.6,30],[-.32,-.12,.35,22],[-.58,-.08,.22,14],[-.7,-.32,.12,8]].forEach(([x,y,len,n]) => {
+      const cx=R+x*R, cy=R+y*R;
+      g.strokeStyle="rgba(255,255,248,.05)"; g.lineWidth=N*.005;
+      for (let i=0;i<n;i++){
+        const a=rnd()*Math.PI*2, l=(.3+rnd()*.7)*len*R;
+        g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(a)*l, cy+Math.sin(a)*l); g.stroke();
+      }
+      const bg=g.createRadialGradient(cx,cy,0,cx,cy,N*.018);
+      bg.addColorStop(0,"rgba(255,255,250,.75)"); bg.addColorStop(1,"rgba(255,255,250,0)");
+      g.fillStyle=bg; g.beginPath(); g.arc(cx,cy,N*.018,0,Math.PI*2); g.fill();
+    });
+    gr = g.createRadialGradient(R,R,R*.5,R,R,R);
+    gr.addColorStop(0,"rgba(18,16,14,0)"); gr.addColorStop(1,"rgba(18,16,14,.42)");
+    g.fillStyle=gr; g.fillRect(0,0,N,N);
+    g.restore();
+    return cv;
+  })();
+
+  const shadowBufs = new Map();
+  function shadowBuf(px){
+    let b = shadowBufs.get(px);
+    if (!b){ b = document.createElement("canvas"); b.width = b.height = px; shadowBufs.set(px,b); }
+    return b;
+  }
+
+  let hemi = "S";
+  try { const v = localStorage.getItem("lua-hemi"); if (v==="N"||v==="S") hemi = v; } catch(e){}
+
   function drawMoon(cv, k, waxing){
-    const rect = cv.getBoundingClientRect();
-    const size = Math.max(rect.width, 8);
-    const dpr = window.devicePixelRatio || 1;
+    const size = cv.getBoundingClientRect().width;
+    if (!size) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const px = Math.round(size*dpr);
     if (cv.width !== px){ cv.width = px; cv.height = px; }
     const ctx = cv.getContext("2d");
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.clearRect(0,0,size,size);
-    const r = size/2 - Math.max(.75, size*.02), cx = size/2, cy = size/2;
-    ctx.fillStyle = C.dark;
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
-
-    const litRight = waxing !== (hemi === "S");
-    ctx.save();
-    ctx.translate(cx,cy);
-    if (!litRight) ctx.scale(-1,1);
-    if (k > 0.005){
-      const grad = ctx.createRadialGradient(-r*.25,-r*.25,r*.1,0,0,r);
-      grad.addColorStop(0, C.lit); grad.addColorStop(1, C.edge);
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(0,0,r,-Math.PI/2,Math.PI/2);
-      ctx.ellipse(0,0,Math.max(0.01, r*Math.abs(1-2*k)),r,0,Math.PI/2,-Math.PI/2,k<0.5);
-      ctx.closePath();
-      ctx.fill();
-    }
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,px,px);
+    const r = px/2*.97, ce = px/2;
+    ctx.save(); ctx.translate(ce,ce);
+    if (hemi === "S") ctx.rotate(Math.PI);           // seen upside down from the south
+    ctx.drawImage(TEX,-r,-r,2*r,2*r);
     ctx.restore();
-    ctx.strokeStyle = C.rim;
-    ctx.lineWidth = Math.max(.75, size*.012);
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.stroke();
+
+    const sb = shadowBuf(px), sx = sb.getContext("2d");
+    sx.setTransform(1,0,0,1,0,0); sx.globalCompositeOperation="source-over"; sx.filter="none";
+    sx.clearRect(0,0,px,px);
+    sx.fillStyle = "rgba(4,6,14,.9)";               // leaves a faint earthshine on the dark side
+    sx.beginPath(); sx.arc(ce,ce,r+.5,0,Math.PI*2); sx.fill();
+    if (k > 0.003){
+      const blur = Math.max(.4, r*.035);
+      const litRight = waxing !== (hemi === "S");
+      sx.globalCompositeOperation = "destination-out";
+      sx.filter = `blur(${blur}px)`;
+      sx.translate(ce,ce); if (!litRight) sx.scale(-1,1);
+      sx.beginPath();
+      sx.moveTo(0,-r);
+      sx.arc(0,0,r+blur*3,-Math.PI/2,Math.PI/2);
+      sx.lineTo(0,r);
+      sx.ellipse(0,0,Math.max(.01, r*Math.abs(1-2*k)),r,0,Math.PI/2,-Math.PI/2,k<0.5);
+      sx.closePath();
+      sx.fillStyle = "#000"; sx.fill();
+      sx.setTransform(1,0,0,1,0,0); sx.filter="none"; sx.globalCompositeOperation="source-over";
+    }
+    ctx.drawImage(sb,0,0);
+  }
+
+  // ---------- sky ----------
+  const sky = {rot:$("skyRot"), stars:$("skyStars"), tw:$("skyTwinkle"), fx:$("skyFx"), list:[], S:0};
+  function $(id){ return document.getElementById(id); }
+  const STAR_COLORS = ["#A9BEFF","#C3D2FF","#DFE6FF","#F6F7FF","#F6F7FF","#FFFFFF","#FFF4E8","#FFE7CF","#FFD5A8"];
+
+  function buildSky(){
+    const w = innerWidth, h = innerHeight;
+    const R = Math.ceil(Math.hypot(w,h)/2) + 24, S = 2*R;
+    if (Math.abs(S - sky.S) < 120 && sky.S) return;
+    sky.S = S;
+    sky.rot.style.width = sky.rot.style.height = S + "px";
+    [sky.stars, sky.tw].forEach(cv => { cv.width = cv.height = S; cv.style.width = cv.style.height = S + "px"; });
+    const g = sky.stars.getContext("2d"), rnd = mulberry(424242);
+    g.clearRect(0,0,S,S);
+    const gauss = () => (rnd()+rnd()+rnd()+rnd()-2)/2;
+
+    // Milky Way band
+    g.save(); g.translate(R,R); g.rotate(-0.62);
+    g.globalCompositeOperation = "lighter";
+    for (let i=0;i<90;i++){
+      const x=(rnd()*2-1)*R*1.05, y=gauss()*R*.11, rr=R*(.05+rnd()*.13);
+      const warm = Math.abs(x) < R*.3 && rnd() < .5;
+      const mg=g.createRadialGradient(x,y,0,x,y,rr);
+      mg.addColorStop(0, warm ? "rgba(210,190,170,.05)" : "rgba(150,170,225,.045)");
+      mg.addColorStop(1,"rgba(0,0,0,0)");
+      g.fillStyle=mg; g.beginPath(); g.arc(x,y,rr,0,Math.PI*2); g.fill();
+    }
+    const bandStars = Math.round(S*S/700);
+    for (let i=0;i<bandStars;i++){
+      const x=(rnd()*2-1)*R*1.05, y=gauss()*R*.13;
+      g.fillStyle=`rgba(220,226,255,${.1+rnd()*.35})`;
+      g.fillRect(x,y,rnd()<.85?.7:1.2,rnd()<.85?.7:1.2);
+    }
+    g.globalCompositeOperation = "source-over";
+    for (let i=0;i<40;i++){
+      const x=(rnd()*2-1)*R*.9, y=gauss()*R*.035, rr=R*(.02+rnd()*.05);
+      const dg=g.createRadialGradient(x,y,0,x,y,rr);
+      dg.addColorStop(0,"rgba(3,5,12,.35)"); dg.addColorStop(1,"rgba(3,5,12,0)");
+      g.fillStyle=dg; g.beginPath(); g.arc(x,y,rr,0,Math.PI*2); g.fill();
+    }
+    g.restore();
+
+    // field stars
+    sky.list = [];
+    const count = Math.round(S*S/1500);
+    for (let i=0;i<count;i++){
+      const x=rnd()*S, y=rnd()*S, m=Math.pow(rnd(),4.5);
+      const r=.35 + m*1.6, a=.25 + rnd()*.55 + m*.3;
+      const col=STAR_COLORS[Math.floor(rnd()*STAR_COLORS.length)];
+      if (m > .22 && sky.list.length < 260){ sky.list.push({x,y,r,a:Math.min(1,a),col,sp:.6+rnd()*2.2,ph:rnd()*6.3}); continue; }
+      g.globalAlpha=Math.min(1,a); g.fillStyle=col;
+      g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill();
+      if (m > .12){ g.globalAlpha=a*.12; g.beginPath(); g.arc(x,y,r*3.2,0,Math.PI*2); g.fill(); }
+    }
+    g.globalAlpha = 1;
+    drawTwinkle(0, true);
+  }
+
+  function drawTwinkle(t, full){
+    const g = sky.tw.getContext("2d");
+    if (full) g.clearRect(0,0,sky.S,sky.S);
+    for (const st of sky.list){
+      const a = reduce ? st.a : st.a*(.55 + .45*Math.sin(t*.001*st.sp + st.ph));
+      const e = st.r*5;
+      if (!full) g.clearRect(st.x-e, st.y-e, e*2, e*2);
+      g.globalAlpha = a*.16; g.fillStyle = st.col;
+      g.beginPath(); g.arc(st.x,st.y,st.r*3.6,0,Math.PI*2); g.fill();
+      g.globalAlpha = a;
+      g.beginPath(); g.arc(st.x,st.y,st.r,0,Math.PI*2); g.fill();
+      if (st.r > 1.4){
+        g.globalAlpha = a*.35; g.fillRect(st.x-st.r*4.5, st.y-.4, st.r*9, .8); g.fillRect(st.x-.4, st.y-st.r*4.5, .8, st.r*9);
+      }
+    }
+    g.globalAlpha = 1;
+  }
+
+  let lastTw = 0;
+  function twinkleLoop(t){
+    if (t - lastTw > 45){ lastTw = t; drawTwinkle(t, false); }
+    requestAnimationFrame(twinkleLoop);
+  }
+
+  // shooting stars
+  function sizeFx(){
+    const dpr = Math.min(window.devicePixelRatio||1, 2);
+    sky.fx.width = Math.round(innerWidth*dpr); sky.fx.height = Math.round(innerHeight*dpr);
+    sky.fx.getContext("2d").setTransform(dpr,0,0,dpr,0,0);
+  }
+  function scheduleMeteor(){ setTimeout(launchMeteor, 6000 + Math.random()*14000); }
+  function launchMeteor(){
+    if (document.hidden){ scheduleMeteor(); return; }
+    const w = innerWidth, h = innerHeight, g = sky.fx.getContext("2d");
+    const left = Math.random() < .5;
+    const x0 = w*(.15 + Math.random()*.7), y0 = h*Math.random()*.4;
+    const ang = (left ? Math.PI*.78 : Math.PI*.22) + (Math.random()-.5)*.3;
+    const dist = 260 + Math.random()*320, len = 110 + Math.random()*150, dur = 750 + Math.random()*550;
+    const ux = Math.cos(ang), uy = Math.sin(ang), t0 = performance.now();
+    function frame(t){
+      const p = (t - t0)/dur;
+      g.clearRect(0,0,w,h);
+      if (p >= 1){ scheduleMeteor(); return; }
+      const hx = x0 + ux*dist*p, hy = y0 + uy*dist*p, tl = len*Math.min(1, p*2.5);
+      const al = Math.sin(Math.PI*p);
+      const lg = g.createLinearGradient(hx-ux*tl, hy-uy*tl, hx, hy);
+      lg.addColorStop(0,"rgba(220,230,255,0)"); lg.addColorStop(1,`rgba(240,244,255,${.85*al})`);
+      g.strokeStyle = lg; g.lineWidth = 1.6; g.lineCap = "round";
+      g.beginPath(); g.moveTo(hx-ux*tl, hy-uy*tl); g.lineTo(hx,hy); g.stroke();
+      g.fillStyle = `rgba(255,255,255,${.9*al})`; g.beginPath(); g.arc(hx,hy,1.4,0,Math.PI*2); g.fill();
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
   }
 
   // ---------- state ----------
-  let hemi = "S";
-  try { const v = localStorage.getItem("lua-hemi"); if (v==="N"||v==="S") hemi = v; } catch(e){}
-  const now = new Date();
+  let now = new Date();
   let selected = startOfDay(now);
   let viewY = now.getFullYear(), viewM = now.getMonth();
-
-  const $ = id => document.getElementById(id);
+  let hero = null;
   const pending = [];
   function queueMoon(cv,k,w){ pending.push([cv,k,w]); }
   function flushMoons(){ for (const [cv,k,w] of pending) drawMoon(cv,k,w); }
-
   function moonCanvas(k,w){ const cv=document.createElement("canvas"); cv.setAttribute("aria-hidden","true"); queueMoon(cv,k,w); return cv; }
 
   function phaseItem(p, ref){
@@ -393,30 +663,69 @@ footer{font-size:12.5px;color:var(--muted);max-width:70ch}
     return list;
   }
 
-  function renderHero(){
-    const isToday = sameDay(selected, now);
-    const t = isToday ? now : noon(selected);
-    const st = moonState(t);
-    const around = phasesInRange(new Date(t - 40*DAY), new Date(t.getTime() + 40*DAY));
-    const todays = around.find(p => sameDay(p.date, t));
-    const prevNew = [...around].reverse().find(p => p.type===0 && p.date <= t);
-    const nextNew = around.find(p => p.type===0 && p.date > t);
-    const next = around.find(p => p.date > t);
+  const isLive = () => sameDay(selected, now);
+  const heroTime = () => isLive() ? now : noon(selected);
 
-    $("heroEyebrow").textContent = isToday ? "Agora · " + fmtTime.format(now) : "Dia selecionado · meio-dia";
-    $("heroName").textContent = todays ? PH_NAME[todays.type] : quadName(st);
-    $("heroDate").textContent = cap(fmtDay.format(t)) + (todays ? " · fase exata às " + fmtTime.format(todays.date) : "");
-    $("sIllum").textContent = Math.round(st.k*100) + "%";
-    const age = prevNew ? (t - prevNew.date)/DAY : 0;
-    $("sAge").textContent = age.toFixed(1).replace(".",",") + " d";
-    if (next){
-      $("sNext").textContent = relDays(t, next.date).replace("em ","");
-      $("sNextLbl").textContent = "até " + PH_NAME[next.type].replace("Lua ","a lua ").replace("Quarto","o quarto").toLowerCase();
+  function renderHero(){
+    const live = isLive(), t = heroTime();
+    const d0 = startOfDay(t);
+    const around = phasesInRange(new Date(d0.getTime() - 40*DAY), new Date(d0.getTime() + 41*DAY));
+    const st = moonState(t);
+    hero = {
+      prevNew: [...around].reverse().find(p => p.type===0 && p.date <= t),
+      nextNew: around.find(p => p.type===0 && p.date > t),
+      next: around.find(p => p.date > t),
+      todays: around.find(p => sameDay(p.date, t)),
+      lastDist: null, lastK: null
+    };
+    const name = hero.todays ? PH_NAME[hero.todays.type] : quadName(st);
+    const h1 = $("heroName");
+    if (h1.textContent !== name){
+      if (h1.textContent === "Lua" || reduce) h1.textContent = name;
+      else { h1.classList.add("swap"); setTimeout(() => { h1.textContent = name; h1.classList.remove("swap"); }, 450); }
     }
-    const frac = (prevNew && nextNew) ? (t - prevNew.date)/(nextNew.date - prevNew.date) : 0;
-    $("cycleBar").style.width = (frac*100).toFixed(1) + "%";
-    $("backToday").hidden = isToday;
-    queueMoon($("heroMoon"), st.k, st.waxing);
+    $("heroDate").textContent = cap(fmtDay.format(t)) + (hero.todays ? " · fase exata às " + fmtTime.format(hero.todays.date) : "");
+    $("heroMode").textContent = live ? "Ao vivo" : "Dia selecionado · meio-dia";
+    $("liveDot").hidden = !live;
+    $("clock").hidden = !live;
+    $("clock").previousElementSibling.hidden = !live;
+    $("backToday").hidden = live;
+    if (hero.next){
+      $("nextLbl").textContent = "Até " + (hero.next.type===0||hero.next.type===2 ? "a " : "o ") + PH_NAME[hero.next.type].replace("Lua ","lua ").replace("Quarto","quarto");
+      $("nextWhen").textContent = cap(fmtShort.format(hero.next.date)) + " · " + fmtTime.format(hero.next.date);
+    }
+    document.querySelector(".hero-moon").style.setProperty("--glow", (0.15 + 0.85*st.k).toFixed(2));
+    $("heroMoon").setAttribute("aria-label", name + ", " + Math.round(st.k*100) + "% iluminada");
+    hero.k = st.k; hero.waxing = st.waxing;
+    requestAnimationFrame(() => drawMoon($("heroMoon"), st.k, st.waxing));
+    tickHero();
+  }
+
+  function tickHero(){
+    if (!hero) return;
+    const t = heroTime();
+    if (hero.next && t >= hero.next.date){ renderHero(); renderMonth(); renderUpcoming(); return; }
+    const st = moonState(t);
+    roll($("sIllum"), fmtPct.format(st.k*100) + "%", st.waxing ? "up" : "down");
+    if (hero.prevNew){
+      const ms = t - hero.prevNew.date;
+      const d = Math.floor(ms/DAY), h = Math.floor(ms%DAY/3600000), m = Math.floor(ms%3600000/60000);
+      roll($("sAge"), d + "d " + pad(h) + "h " + pad(m) + "m", "up");
+    }
+    const dist = moonDistance(t);
+    roll($("sDist"), fmtInt.format(dist) + " km", hero.lastDist != null && dist < hero.lastDist ? "down" : "up");
+    hero.lastDist = dist;
+    if (hero.next){
+      const ms = Math.max(0, hero.next.date - t);
+      const d = Math.floor(ms/DAY), h = Math.floor(ms%DAY/3600000), m = Math.floor(ms%3600000/60000), sec = Math.floor(ms%60000/1000);
+      roll($("countdown"), d + "d " + pad(h) + ":" + pad(m) + ":" + pad(sec), "down");
+    }
+    if (isLive()) roll($("clock"), fmtClock.format(now), "up");
+    if (hero.prevNew && hero.nextNew){
+      const f = Math.min(1, Math.max(0, (t - hero.prevNew.date)/(hero.nextNew.date - hero.prevNew.date)));
+      $("cycleBar").style.width = (f*100).toFixed(3) + "%";
+      $("cycleDot").style.left = (f*100).toFixed(3) + "%";
+    }
   }
 
   function renderMonth(){
@@ -454,19 +763,19 @@ footer{font-size:12.5px;color:var(--muted);max-width:70ch}
       });
       g.appendChild(b);
     }
-
     const mp = $("monthPhases"); mp.innerHTML = "";
     phases.filter(p => p.date.getMonth()===viewM && p.date.getFullYear()===viewY).forEach(p => mp.appendChild(phaseItem(p, null)));
   }
 
   function renderUpcoming(){
-    const list = markBlue(phasesInRange(new Date(now.getFullYear(), now.getMonth(), 1), new Date(now.getTime() + 45*DAY)))
+    const d0 = startOfDay(now);
+    const list = markBlue(phasesInRange(new Date(d0.getFullYear(), d0.getMonth(), 1), new Date(d0.getTime() + 46*DAY)))
       .filter(p => p.date > now).slice(0,4);
     const ul = $("upcoming"); ul.innerHTML = "";
     list.forEach(p => ul.appendChild(phaseItem(p, now)));
     $("hemiNote").textContent = hemi === "S"
-      ? "No hemisfério Sul a lua crescente aparece iluminada pelo lado esquerdo, formando um C. A minguante aparece como um D."
-      : "No hemisfério Norte a lua crescente aparece iluminada pelo lado direito, formando um D. A minguante aparece como um C.";
+      ? "No hemisfério Sul a lua aparece de cabeça para baixo em relação ao Norte: a crescente fica iluminada pelo lado esquerdo, formando um C, e a minguante forma um D."
+      : "No hemisfério Norte a lua crescente fica iluminada pelo lado direito, formando um D, e a minguante forma um C.";
   }
 
   function renderYear(){
@@ -506,34 +815,50 @@ footer{font-size:12.5px;color:var(--muted);max-width:70ch}
 
   function render(){
     pending.length = 0;
-    readColors();
     renderHero(); renderMonth(); renderUpcoming(); renderYear();
     $("h-sul").setAttribute("aria-pressed", hemi==="S");
     $("h-norte").setAttribute("aria-pressed", hemi==="N");
+    $("sky").classList.toggle("ccw", hemi === "N");
     requestAnimationFrame(flushMoons);
   }
+
+  // ---------- live clock ----------
+  function tick(){
+    const prev = now; now = new Date();
+    if (!sameDay(prev, now)){
+      if (sameDay(selected, prev)){ selected = startOfDay(now); viewY = now.getFullYear(); viewM = now.getMonth(); }
+      render();
+    } else if (prev.getMinutes() !== now.getMinutes()){
+      renderUpcoming(); requestAnimationFrame(flushMoons);
+      if (isLive()) renderHero(); else tickHero();
+    } else {
+      tickHero();
+    }
+  }
+  function loop(){ tick(); setTimeout(loop, 1000 - (Date.now() % 1000) + 5); }
 
   // ---------- events ----------
   $("prevM").onclick = () => { viewM--; if (viewM<0){viewM=11;viewY--;} render(); };
   $("nextM").onclick = () => { viewM++; if (viewM>11){viewM=0;viewY++;} render(); };
-  $("todayM").onclick = $("backToday").onclick = () => { selected = startOfDay(now); viewY = now.getFullYear(); viewM = now.getMonth(); render(); };
+  $("todayM").onclick = $("backToday").onclick = () => { now = new Date(); selected = startOfDay(now); viewY = now.getFullYear(); viewM = now.getMonth(); render(); };
   document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
     hemi = b.dataset.h;
     try { localStorage.setItem("lua-hemi", hemi); } catch(e){}
     render();
   });
   document.addEventListener("keydown", e => {
-    if (e.target.closest && e.target.closest("input,textarea")) return;
     if (e.key === "ArrowLeft" && e.altKey) $("prevM").click();
     if (e.key === "ArrowRight" && e.altKey) $("nextM").click();
   });
-  const redraw = () => { readColors(); flushMoons(); };
-  try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw); } catch(e){}
-  new MutationObserver(redraw).observe(document.documentElement, {attributes:true, attributeFilter:["data-theme"]});
-  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(flushMoons, 120); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) tick(); });
+  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => {
+    buildSky(); sizeFx(); flushMoons(); if (hero) drawMoon($("heroMoon"), hero.k, hero.waxing);
+  }, 150); });
 
+  buildSky(); sizeFx();
   render();
-  window.__lua = {truePhase, phasesInRange, moonState};
+  setTimeout(loop, 1000 - (Date.now() % 1000) + 5);
+  if (!reduce){ requestAnimationFrame(twinkleLoop); scheduleMeteor(); }
 })();
 </script>
 </body>
