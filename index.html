@@ -250,7 +250,7 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
   </section>
 
   <footer>
-    Fases, iluminação e distância calculadas no seu navegador com os algoritmos de Jean Meeus (<i>Astronomical Algorithms</i>, cap. 47–49). Os horários têm precisão de poucos minutos e a distância, de algumas dezenas de quilômetros. A iluminação de cada dia do calendário é medida ao meio-dia local. Uma lua azul é a segunda lua cheia dentro do mesmo mês. O céu de fundo é ilustrativo e gira mais rápido que o céu real.
+    Foto da Lua: NASA/Goddard Space Flight Center. Fases, iluminação e distância calculadas no seu navegador com os algoritmos de Jean Meeus (<i>Astronomical Algorithms</i>, cap. 47–49). Os horários têm precisão de poucos minutos e a distância, de algumas dezenas de quilômetros. A iluminação de cada dia do calendário é medida ao meio-dia local. Uma lua azul é a segunda lua cheia dentro do mesmo mês. O céu de fundo é ilustrativo e gira mais rápido que o céu real.
   </footer>
 </div>
 
@@ -410,61 +410,23 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
   }
 
   // ---------- realistic moon ----------
-  const TEX = (function makeMoonTexture(){
-    const N = 512, R = N/2, rnd = mulberry(1969);
-    const cv = document.createElement("canvas"); cv.width = cv.height = N;
-    const g = cv.getContext("2d");
-    g.save(); g.beginPath(); g.arc(R,R,R,0,Math.PI*2); g.clip();
-    let gr = g.createRadialGradient(R*.92,R*.88,R*.1,R,R,R);
-    gr.addColorStop(0,"#DCD7CC"); gr.addColorStop(1,"#BDB7AB");
-    g.fillStyle = gr; g.fillRect(0,0,N,N);
-    for (let i=0;i<3200;i++){
-      const x=rnd()*N, y=rnd()*N, r=rnd()*N*.012+.5;
-      g.fillStyle = rnd()<.5 ? "rgba(255,255,250,.045)" : "rgba(70,66,60,.05)";
-      g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill();
-    }
-    // maria: [x, y, rx, ry, darkness] in disc units, northern-hemisphere view
-    const maria = [
-      [-.30,-.44,.27,.22,.13],[.18,-.37,.17,.16,.14],[.31,-.11,.2,.17,.13],[.68,-.29,.11,.13,.16],
-      [.55,.12,.13,.19,.11],[.37,.27,.09,.09,.11],[-.15,.36,.17,.13,.11],[-.62,-.05,.24,.42,.1],
-      [-.46,.44,.09,.09,.12],[-.05,-.71,.36,.08,.06],[.05,-.22,.08,.07,.1],[-.3,.02,.11,.09,.09],
-      [-.2,.2,.1,.08,.09],[-.47,-.33,.12,.12,.08],[.05,-.03,.07,.06,.08]
-    ];
-    g.globalCompositeOperation = "source-over";
-    maria.forEach(([x,y,rx,ry,dk]) => {
-      for (let j=0;j<16;j++){
-        const px = R + (x + (rnd()-.5)*rx*1.1)*R, py = R + (y + (rnd()-.5)*ry*1.1)*R;
-        const rr = (.45 + rnd()*.55) * Math.max(rx,ry) * R;
-        g.save(); g.translate(px,py); g.scale(rx/Math.max(rx,ry), ry/Math.max(rx,ry));
-        const mg = g.createRadialGradient(0,0,0,0,0,rr);
-        mg.addColorStop(0,`rgba(72,74,80,${dk})`); mg.addColorStop(.7,`rgba(72,74,80,${dk*.7})`); mg.addColorStop(1,"rgba(72,74,80,0)");
-        g.fillStyle = mg; g.beginPath(); g.arc(0,0,rr,0,Math.PI*2); g.fill();
-        g.restore();
-      }
-    });
-    for (let i=0;i<260;i++){
-      const a=rnd()*Math.PI*2, d=Math.sqrt(rnd())*R*.96;
-      const x=R+Math.cos(a)*d, y=R+Math.sin(a)*d, r=N*(.003+Math.pow(rnd(),3)*.022);
-      g.fillStyle="rgba(45,42,38,.15)"; g.beginPath(); g.arc(x+r*.18,y+r*.18,r,0,Math.PI*2); g.fill();
-      g.fillStyle="rgba(255,253,245,.09)"; g.beginPath(); g.arc(x-r*.12,y-r*.12,r*.82,0,Math.PI*2); g.fill();
-    }
-    // bright ray craters: Tycho, Copernicus, Kepler, Aristarchus
-    [[-.12,.68,.6,30],[-.32,-.12,.35,22],[-.58,-.08,.22,14],[-.7,-.32,.12,8]].forEach(([x,y,len,n]) => {
-      const cx=R+x*R, cy=R+y*R;
-      g.strokeStyle="rgba(255,255,248,.05)"; g.lineWidth=N*.005;
-      for (let i=0;i<n;i++){
-        const a=rnd()*Math.PI*2, l=(.3+rnd()*.7)*len*R;
-        g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(a)*l, cy+Math.sin(a)*l); g.stroke();
-      }
-      const bg=g.createRadialGradient(cx,cy,0,cx,cy,N*.018);
-      bg.addColorStop(0,"rgba(255,255,250,.75)"); bg.addColorStop(1,"rgba(255,255,250,0)");
-      g.fillStyle=bg; g.beginPath(); g.arc(cx,cy,N*.018,0,Math.PI*2); g.fill();
-    });
-    gr = g.createRadialGradient(R,R,R*.5,R,R,R);
-    gr.addColorStop(0,"rgba(18,16,14,0)"); gr.addColorStop(1,"rgba(18,16,14,.42)");
-    g.fillStyle=gr; g.fillRect(0,0,N,N);
-    g.restore();
-    return cv;
+  // Full-moon photo (NASA/GSFC, public domain), north up. A plain disc stands in until it loads.
+  const TEX = document.createElement("canvas");
+  TEX.width = TEX.height = 900;
+  (function initTexture(){
+    const g = TEX.getContext("2d"), R = 450;
+    const gr = g.createRadialGradient(R*.9,R*.88,R*.1,R,R,R);
+    gr.addColorStop(0,"#CFCBC3"); gr.addColorStop(1,"#9E9A93");
+    g.fillStyle = gr; g.beginPath(); g.arc(R,R,R,0,Math.PI*2); g.fill();
+    const img = new Image();
+    img.onload = () => {
+      g.clearRect(0,0,900,900);
+      g.save(); g.beginPath(); g.arc(R,R,R*.997,0,Math.PI*2); g.clip();
+      g.drawImage(img,0,0,900,900);
+      g.restore();
+      if (window.redrawAllMoons) window.redrawAllMoons();
+    };
+    img.src = "lua.jpg";
   })();
 
   const shadowBufs = new Map();
@@ -489,13 +451,14 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
     const r = px/2*.97, ce = px/2;
     ctx.save(); ctx.translate(ce,ce);
     if (hemi === "S") ctx.rotate(Math.PI);           // seen upside down from the south
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
     ctx.drawImage(TEX,-r,-r,2*r,2*r);
     ctx.restore();
 
     const sb = shadowBuf(px), sx = sb.getContext("2d");
     sx.setTransform(1,0,0,1,0,0); sx.globalCompositeOperation="source-over"; sx.filter="none";
     sx.clearRect(0,0,px,px);
-    sx.fillStyle = "rgba(4,6,14,.9)";               // leaves a faint earthshine on the dark side
+    sx.fillStyle = "rgba(4,6,14,.92)";               // leaves a faint earthshine on the dark side
     sx.beginPath(); sx.arc(ce,ce,r+.5,0,Math.PI*2); sx.fill();
     if (k > 0.003){
       const blur = Math.max(.4, r*.035);
@@ -821,6 +784,9 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
     $("sky").classList.toggle("ccw", hemi === "N");
     requestAnimationFrame(flushMoons);
   }
+
+  function redrawAllMoons(){ flushMoons(); if (hero) drawMoon($("heroMoon"), hero.k, hero.waxing); }
+  window.redrawAllMoons = redrawAllMoons;
 
   // ---------- live clock ----------
   function tick(){
