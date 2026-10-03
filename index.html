@@ -150,6 +150,58 @@ td .d small{color:var(--muted);font-size:11.5px;margin-left:4px}
 tr.cur td{background:var(--blue-soft)}
 footer{font-size:12.5px;color:var(--muted);max-width:72ch}
 
+/* tradições */
+.top-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.trad-btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--glass);border-radius:6px;padding:7px 14px;min-height:40px;cursor:pointer;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.trad-btn:hover{border-color:var(--accent)}
+.ico{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.good{display:flex;flex-direction:column;gap:4px;max-width:480px}
+.good p{margin:0;font-size:14.5px;line-height:1.45}
+.linkbtn{align-self:flex-start;border:0;background:none;padding:6px 0;color:var(--blue-hi);cursor:pointer;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.linkbtn:hover{color:var(--ink)}
+.scrim{position:fixed;inset:0;z-index:40;background:rgba(1,3,10,.62);opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s .3s}
+.scrim.open{opacity:1;visibility:visible;transition:opacity .3s ease}
+.drawer{position:fixed;top:0;right:0;bottom:0;z-index:50;width:min(780px,100%);background:#050B1D;border-left:1px solid var(--line);display:flex;flex-direction:column;
+  transform:translateX(100%);visibility:hidden;transition:transform .3s cubic-bezier(.4,0,1,1),visibility 0s .3s;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:-30px 0 60px rgba(0,0,0,.5)}
+.drawer.open{transform:none;visibility:visible;transition:transform .45s cubic-bezier(.2,.8,.25,1)}
+.dr-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:20px 22px 16px;border-bottom:1px solid var(--line)}
+.dr-head h2{font-size:clamp(15px,2.2vw,19px);margin-top:6px}
+.x{flex:none;width:40px;height:40px;border-radius:6px;border:1px solid var(--line);background:var(--glass-hi);cursor:pointer;display:grid;place-items:center}
+.x:hover{border-color:var(--accent)}
+.dr-body{flex:1;min-height:0;display:grid;grid-template-columns:210px minmax(0,1fr)}
+.cats{border-right:1px solid var(--line);padding:12px 10px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.cats button{display:flex;align-items:center;gap:10px;text-align:left;border:0;background:transparent;border-radius:6px;padding:10px 12px;min-height:44px;cursor:pointer;color:var(--muted);font-size:14px;font-weight:500}
+.cats button:hover{background:rgba(120,150,230,.08);color:var(--ink)}
+.cats button[aria-current="true"]{background:var(--blue-soft);color:var(--ink);box-shadow:inset 2px 0 0 var(--blue-hi)}
+.dr-main{overflow-y:auto;padding:20px 22px 28px;display:flex;flex-direction:column;gap:16px}
+.cat-head{display:flex;flex-direction:column;gap:6px}
+.cat-head h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:15px;letter-spacing:.06em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.cat-head p{margin:0;color:var(--muted);font-size:14px;max-width:62ch}
+.phases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pcard{border:1px solid var(--line);border-radius:8px;background:var(--glass);padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.pcard.now{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.pcard-h{display:flex;align-items:center;gap:10px}
+.pcard-h canvas{width:30px;height:30px;flex:none}
+.pcard-h b{font-weight:600;font-size:15px}
+.pcard-h .badge{margin-left:auto;font-family:var(--f-data);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:#fff;border-radius:3px;padding:1px 6px;white-space:nowrap}
+.pcard h4{margin:0;font-family:var(--f-data);font-weight:500;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pcard ul{margin:5px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:13.5px;line-height:1.4}
+.pcard li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:6px}
+.pcard .ok li::before{content:"+";color:var(--live);font-family:var(--f-data)}
+.pcard .no li::before{content:"\2212";color:var(--accent);font-family:var(--f-data)}
+.sci{font-style:normal;font-family:var(--f-data);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--blue-hi);border:1px solid currentColor;border-radius:3px;padding:0 4px;margin-left:6px;white-space:nowrap;vertical-align:1px}
+.disc{font-size:12.5px;color:var(--muted);margin:4px 0 0;max-width:64ch}
+@media (max-width:640px){
+  .dr-body{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}
+  .cats{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px 12px}
+  .cats button{flex:none;white-space:nowrap;padding:8px 12px}
+  .cats button[aria-current="true"]{box-shadow:inset 0 -2px 0 var(--blue-hi)}
+  .phases{grid-template-columns:1fr}
+  .pcard.now{order:-1}
+  .dr-head,.dr-main{padding-inline:16px}
+}
+
 @media (max-width:820px){ .month{grid-template-columns:1fr} }
 @media (max-width:560px){
   .hero{grid-template-columns:1fr;justify-items:center;text-align:center}
@@ -158,6 +210,8 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
   .next{align-items:center;width:100%}
   .bar-legend{font-size:10px}
   .back-today{align-self:center}
+  .good{align-items:center}
+  .linkbtn{align-self:center}
   .day{min-height:68px;padding:6px 0;gap:3px}
   .day canvas{width:26px;height:26px}
   .day .lbl .pct{display:none}
@@ -169,6 +223,7 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
   .live .dot{animation:none}
   .in-up,.out-up,.in-down,.out-down{animation:none}
   .roll .s>span.o{display:none}
+  .drawer,.scrim{transition:none}
 }
 </style>
 </head>
@@ -181,12 +236,15 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
 <div class="wrap">
   <div class="top">
     <div class="brand"><i aria-hidden="true"></i>Calendário Lunar</div>
+    <div class="top-actions">
+    <button class="trad-btn" id="tradOpen" type="button" aria-haspopup="dialog" aria-controls="trad"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>Tradições</button>
     <div class="hemi">
       <span>Hemisfério</span>
       <div class="seg" role="group" aria-label="Hemisfério">
         <button id="h-sul" type="button" data-h="S">Sul</button>
         <button id="h-norte" type="button" data-h="N">Norte</button>
       </div>
+    </div>
     </div>
   </div>
 
@@ -196,6 +254,11 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
       <div class="eyebrow live" id="heroEyebrow"><span class="dot" id="liveDot"></span><span id="heroMode">Ao vivo</span><span>·</span><span id="clock"></span></div>
       <h1 id="heroName">Lua</h1>
       <div class="date" id="heroDate"></div>
+      <div class="good">
+        <span class="eyebrow" id="goodLbl">Pela tradição, bom para</span>
+        <p id="goodList"></p>
+        <button class="linkbtn" id="goodMore" type="button" aria-haspopup="dialog" aria-controls="trad">Ver as tradições de cada lua</button>
+      </div>
       <div class="stats">
         <div class="stat"><b id="sIllum">–</b><span>iluminada</span></div>
         <div class="stat"><b id="sAge">–</b><span>idade da lua</span></div>
@@ -256,6 +319,22 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
     Foto da Lua: NASA/Goddard Space Flight Center. Fases, iluminação e distância calculadas no seu navegador com os algoritmos de Jean Meeus (<i>Astronomical Algorithms</i>, cap. 47–49). Os horários têm precisão de poucos minutos e a distância, de algumas dezenas de quilômetros. A iluminação de cada dia do calendário é medida ao meio-dia local. Uma lua azul é a segunda lua cheia dentro do mesmo mês. O céu de fundo é ilustrativo e gira mais rápido que o céu real.
   </footer>
 </div>
+
+<div class="scrim" id="tradScrim" aria-hidden="true"></div>
+<aside class="drawer" id="trad" role="dialog" aria-modal="true" aria-labelledby="tradTitle" inert>
+  <header class="dr-head">
+    <div><span class="eyebrow">Tradições populares</span><h2 id="tradTitle">O que cada lua favorece</h2></div>
+    <button class="x" id="tradClose" type="button" aria-label="Fechar tradições"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+  </header>
+  <div class="dr-body">
+    <nav class="cats" id="tradCats" aria-label="Categorias"></nav>
+    <div class="dr-main" id="tradMain">
+      <div class="cat-head"><h3 id="catTitle"></h3><p id="catIntro"></p></div>
+      <div class="phases" id="tradPhases"></div>
+      <p class="disc">Estas indicações vêm de tradições populares e de calendários agrícolas passados de geração em geração. Os itens marcados como <em class="sci">Ciência</em> têm base em observação. Os demais não têm comprovação científica e servem como curiosidade.</p>
+    </div>
+  </div>
+</aside>
 
 <script>
 (function(){
@@ -644,6 +723,8 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
       todays: around.find(p => sameDay(p.date, t)),
       lastDist: null, lastK: null
     };
+    const lastP = [...around].reverse().find(p => p.date <= t);
+    hero.group = lastP ? lastP.type : 0;
     const name = hero.todays ? PH_NAME[hero.todays.type] : quadName(st);
     const h1 = $("heroName");
     if (h1.textContent !== name){
@@ -663,6 +744,8 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
     document.querySelector(".hero-moon").style.setProperty("--glow", (0.15 + 0.85*st.k).toFixed(2));
     $("heroMoon").setAttribute("aria-label", name + ", " + Math.round(st.k*100) + "% iluminada");
     hero.k = st.k; hero.waxing = st.waxing;
+    renderGood();
+    if (drawer.classList.contains("open")) renderTrad();
     requestAnimationFrame(() => drawMoon($("heroMoon"), st.k, st.waxing));
     tickHero();
   }
@@ -781,7 +864,7 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
 
   function render(){
     pending.length = 0;
-    renderHero(); renderMonth(); renderUpcoming(); renderYear();
+    renderHero(); renderMonth(); renderUpcoming(); renderYear(); renderTrad();
     $("h-sul").setAttribute("aria-pressed", hemi==="S");
     $("h-norte").setAttribute("aria-pressed", hemi==="N");
     $("sky").classList.toggle("ccw", hemi === "N");
@@ -790,6 +873,169 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
 
   function redrawAllMoons(){ flushMoons(); if (hero) drawMoon($("heroMoon"), hero.k, hero.waxing); }
   window.redrawAllMoons = redrawAllMoons;
+
+  // ---------- tradições ----------
+  const GROUP_NAME = ["Lua Nova","Lua Crescente","Lua Cheia","Lua Minguante"];
+  const GROUP_K = [0.04, 0.62, 1, 0.45];
+  const GROUP_WAX = [true, true, true, false];
+  const ICONS = {
+    leaf:'<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+    scissors:'<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88"/><path d="M14.47 14.48 20 20"/><path d="M8.12 8.12 12 12"/>',
+    briefcase:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+    heart:'<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+    activity:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+    home:'<path d="M3 9.5 12 3l9 6.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+    fish:'<path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.47-3.44 6-7 6s-7.56-2.53-8.5-6Z"/><path d="M18 12v.5"/><path d="M7 10.67C7 8 5.58 5.97 2.73 5.5c-1 1.5-1 5 .23 6.5-1.24 1.5-1.24 5-.23 6.5C5.58 18.03 7 16 7 13.33"/>'
+  };
+  const icon = name => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+
+  // "!" marks an item with a scientific basis; everything else is popular tradition.
+  const TRAD = [
+    {id:"jardim", name:"Jardinagem e horta", icon:"leaf",
+     intro:"No campo, a lua decide quando plantar, podar e colher. Muitos calendários de plantio seguem esta tradição.",
+     ph:[
+      {g:["Preparar e adubar o solo","Arrancar ervas daninhas","Controlar pragas"], a:["Plantar sementes","Podar"]},
+      {g:["Semear hortaliças de folha: alface, couve, rúcula","Plantar o que dá acima da terra: feijão, milho, tomate","Fazer mudas, estacas e enxertos"], a:["Podar, porque a seiva está subindo"]},
+      {g:["Colher frutas para comer logo","Colher ervas medicinais e de chá","Plantar flores e transplantar mudas"], a:["Colher para guardar, porque estraga mais rápido","Podar"]},
+      {g:["Podar árvores e roseiras","Plantar raízes: cenoura, batata, mandioca, beterraba","Colher grãos e frutos para guardar","Cortar madeira e bambu, que pegam menos caruncho"], a:["Semear hortaliças de folha"]}
+     ]},
+    {id:"cabelo", name:"Cabelo e beleza", icon:"scissors",
+     intro:"Muita gente marca o corte de cabelo pela lua, conforme o que quer: que cresça, que ganhe volume ou que o corte dure.",
+     ph:[
+      {g:["Hidratação e tratamentos de limpeza","Esfoliação e limpeza de pele"], a:["Cortar o cabelo, que voltaria mais fraco"]},
+      {g:["Cortar para o cabelo crescer mais rápido","Cortar as unhas para crescerem mais"], a:["Depilação, porque os pelos voltam rápido"]},
+      {g:["Cortar para ganhar volume e força","Máscaras e hidratação, que absorvem melhor"], a:["Tintura e química forte"]},
+      {g:["Cortar para manter o comprimento por mais tempo","Depilação, porque os pelos demoram a voltar","Tratar caspa e oleosidade"], a:["Cortar se a ideia é deixar crescer"]}
+     ]},
+    {id:"negocios", name:"Negócios e dinheiro", icon:"briefcase",
+     intro:"Cada fase vira uma etapa de um projeto: plantar a ideia, fazer crescer, colher os resultados e encerrar o que não rende.",
+     ph:[
+      {g:["Planejar e definir metas","Iniciar um projeto ou negócio","Começar uma reserva de dinheiro"], a:["Lançamentos e grandes anúncios"]},
+      {g:["Divulgar e investir em marketing","Contratar e ampliar a equipe","Pedir aumento ou enviar propostas"], a:["Cortar o que está dando certo"]},
+      {g:["Fechar negócios e assinar contratos","Lançar produtos e fazer vendas","Eventos e apresentações"], a:["Decidir por impulso"]},
+      {g:["Cortar gastos e renegociar dívidas","Encerrar contratos e parcerias","Organizar as contas e fazer balanço"], a:["Começar algo novo"]}
+     ]},
+    {id:"amor", name:"Amor e relacionamentos", icon:"heart",
+     intro:"Nas crenças populares, a lua também marca a hora certa para começos, celebrações e conversas difíceis.",
+     ph:[
+      {g:["Conhecer pessoas e começar um relacionamento","Recomeçar depois de uma fase difícil"], a:["Cobrar decisões do outro"]},
+      {g:["Fazer planos a dois","Aprofundar a relação e conhecer a família"], a:["Deixar a relação esfriar"]},
+      {g:["Casamentos, pedidos e noivados","Festas e encontros românticos"], a:["Discussões, porque as emoções ficam à flor da pele"]},
+      {g:["Terminar o que não faz bem","Perdoar e ter conversas difíceis com calma"], a:["Começar um namoro"]}
+     ]},
+    {id:"saude", name:"Saúde e bem-estar", icon:"activity",
+     intro:"A tradição liga as fases à forma como o corpo absorve e elimina. A ciência confirma pouco disso, mas os costumes seguem muito vivos.",
+     ph:[
+      {g:["Começar uma dieta ou um hábito novo","Fazer desintoxicação"], a:["Exagerar na comida"]},
+      {g:["Ganhar massa muscular e treinar força","Tomar vitaminas, que seriam mais bem absorvidas"], a:["Começar dieta para emagrecer"]},
+      {g:["Meditar e descansar mais","!Estudos indicam que dormimos um pouco menos nas noites perto da lua cheia"], a:["Cirurgias que podem esperar, pela crença de que sangram mais"]},
+      {g:["Emagrecer e desinchar","Largar vícios","Limpeza de pele"], a:["Começar a ganhar peso"]}
+     ]},
+    {id:"casa", name:"Casa e rotina", icon:"home",
+     intro:"Para a casa vale a mesma lógica: planejar na nova, construir na crescente, celebrar na cheia e limpar na minguante.",
+     ph:[
+      {g:["Planejar reformas e mudanças","Organizar a agenda do mês"], a:["Faxina pesada"]},
+      {g:["Mudar de casa","Decorar e comprar móveis","Começar obras"], a:["Jogar coisas fora"]},
+      {g:["Receber visitas e fazer festas","Inaugurar a casa nova"], a:["Dedetizar, que funcionaria menos"]},
+      {g:["Faxina pesada e doar o que não usa","Dedetizar e combater pragas","Pintar e fazer consertos"], a:["Fazer mudança ou inaugurar"]}
+     ]},
+    {id:"natureza", name:"Pesca e céu", icon:"fish",
+     intro:"Aqui a lua tem efeitos reais: ela comanda as marés e muda o brilho do céu à noite. Os pescadores também têm suas crenças.",
+     ph:[
+      {g:["!Observar estrelas e a Via Láctea, com o céu mais escuro do mês","!Marés mais fortes, as marés de sizígia","Pesca no mar, perto da costa"], a:["Pesca em rio, que costuma ser fraca"]},
+      {g:["Pesca em rio e lagoa, que melhora a cada dia","!Ver a lua no começo da noite, logo após o pôr do sol","!Marés mais fracas, as de quadratura: boas para navegar e mergulhar"], a:[]},
+      {g:["!Marés mais fortes, as marés de sizígia","Pesca noturna no mar","!Caminhar à noite com a luz da lua"], a:["!Observar estrelas fracas, que somem no brilho da lua"]},
+      {g:["Pesca em rio e de madrugada","!Ver a lua de manhã: ela nasce depois da meia-noite","!Marés mais fracas, as de quadratura"], a:[]}
+     ]}
+  ];
+
+  let tradCat = "jardim";
+  try { const v = localStorage.getItem("lua-cat"); if (TRAD.some(c => c.id === v)) tradCat = v; } catch(e){}
+  const plain = t => t.replace(/^!/, "");
+
+  function renderGood(){
+    if (!hero) return;
+    const g = hero.group;
+    $("goodLbl").textContent = "Período de " + GROUP_NAME[g].toLowerCase() + " · pela tradição, bom para";
+    $("goodList").textContent = ["jardim","cabelo","negocios"].map(id => plain(TRAD.find(c => c.id === id).ph[g].g[0])).join(" · ");
+  }
+
+  function renderTrad(){
+    const nav = $("tradCats");
+    if (!nav.childElementCount){
+      TRAD.forEach(c => {
+        const b = document.createElement("button");
+        b.type = "button"; b.dataset.cat = c.id;
+        b.innerHTML = icon(c.icon) + "<span></span>";
+        b.lastChild.textContent = c.name;
+        b.onclick = () => { tradCat = c.id; try { localStorage.setItem("lua-cat", tradCat); } catch(e){} renderTrad(); $("tradMain").scrollTop = 0; };
+        nav.appendChild(b);
+      });
+    }
+    nav.querySelectorAll("button").forEach(b => b.setAttribute("aria-current", b.dataset.cat === tradCat));
+    const cat = TRAD.find(c => c.id === tradCat);
+    $("catTitle").innerHTML = icon(cat.icon) + "<span></span>";
+    $("catTitle").lastChild.textContent = cat.name;
+    $("catIntro").textContent = cat.intro;
+    const wrap = $("tradPhases"); wrap.innerHTML = "";
+    const g = hero ? hero.group : 0;
+    cat.ph.forEach((p, i) => {
+      const card = document.createElement("article");
+      card.className = "pcard" + (i === g ? " now" : "");
+      const h = document.createElement("div"); h.className = "pcard-h";
+      h.appendChild(moonCanvas(GROUP_K[i], GROUP_WAX[i]));
+      const b = document.createElement("b"); b.textContent = GROUP_NAME[i]; h.appendChild(b);
+      if (i === g){ const s = document.createElement("span"); s.className = "badge"; s.textContent = isLive() ? "Agora" : "Neste dia"; h.appendChild(s); }
+      card.appendChild(h);
+      [["Bom para", p.g, "ok"], ["Evite", p.a, "no"]].forEach(([title, items, cls]) => {
+        if (!items.length) return;
+        const sec = document.createElement("div");
+        sec.innerHTML = `<h4></h4><ul class="${cls}"></ul>`;
+        sec.firstChild.textContent = title;
+        items.forEach(t => {
+          const li = document.createElement("li"), sp = document.createElement("span");
+          sp.textContent = plain(t);
+          if (t.startsWith("!")){ const em = document.createElement("em"); em.className = "sci"; em.textContent = "Ciência"; sp.appendChild(em); }
+          li.appendChild(sp); sec.lastChild.appendChild(li);
+        });
+        card.appendChild(sec);
+      });
+      wrap.appendChild(card);
+    });
+    requestAnimationFrame(flushMoons);
+  }
+
+  const drawer = $("trad"), scrim = $("tradScrim");
+  let tradOpener = null;
+  function openTrad(){
+    tradOpener = document.activeElement;
+    renderTrad();
+    drawer.inert = false;
+    drawer.classList.add("open"); scrim.classList.add("open");
+    document.body.style.overflow = "hidden";
+    setTimeout(() => $("tradClose").focus(), 60);
+    try { history.replaceState(null, "", "#tradicoes"); } catch(e){}
+  }
+  function closeTrad(){
+    if (!drawer.classList.contains("open")) return;
+    drawer.classList.remove("open"); scrim.classList.remove("open");
+    drawer.inert = true;
+    document.body.style.overflow = "";
+    try { history.replaceState(null, "", location.pathname + location.search); } catch(e){}
+    if (tradOpener && tradOpener.focus) tradOpener.focus();
+  }
+  $("tradOpen").onclick = openTrad;
+  $("goodMore").onclick = openTrad;
+  $("tradClose").onclick = closeTrad;
+  scrim.onclick = closeTrad;
+  drawer.addEventListener("keydown", e => {
+    if (e.key === "Escape"){ e.preventDefault(); closeTrad(); return; }
+    if (e.key !== "Tab") return;
+    const f = [...drawer.querySelectorAll("button")];
+    const first = f[0], last = f[f.length-1];
+    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  });
 
   // ---------- live clock ----------
   function tick(){
@@ -828,6 +1074,7 @@ footer{font-size:12.5px;color:var(--muted);max-width:72ch}
   render();
   setTimeout(loop, 1000 - (Date.now() % 1000) + 5);
   if (!reduce){ requestAnimationFrame(twinkleLoop); scheduleMeteor(); }
+  if (location.hash === "#tradicoes") openTrad();
 })();
 </script>
 </body>
